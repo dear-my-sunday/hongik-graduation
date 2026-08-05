@@ -106,8 +106,8 @@ const defaultData = [
     added: [],
     catalog: [
       co("컴퓨팅사고", "008754", 3, 1, 0),
-      co("디자인씽킹", "", 3, 1, 0),
-      co("창업과실용법률", "", 3, 1, 0),
+      co("디자인씽킹", "008751", 3, 1, 0),
+      co("창업과실용법률", "008752", 3, 1, 0),
     ],
   },
   {
@@ -121,7 +121,7 @@ const defaultData = [
   },
   {
     name: "공통교양 (6개 영역)",
-    note: "7개 영역 중 6개 영역에서 각 1과목 이상 (‘예술과 디자인’ 제외, ‘외국어와 한문’ 2과목 포함). 아래는 예시 — 매 학기 개설과목에서 담으세요.",
+    note: "7개 영역 중 6개 영역에서 각 1과목 이상 (‘예술과 디자인’ 제외, ‘외국어와 한문’ 2과목 포함). ‘(사이버)’ 표시는 온라인 강의 — 매 학기 개설과목은 클래스넷에서 확인하세요.",
     required: 18,
     open: false,
     picker: true,
@@ -130,6 +130,11 @@ const defaultData = [
       co("교양중국어(1)", "002603", 3, 1, 1),
       co("문학과창의적사고", "002585", 3, 3, 1),
       co("예술과법", "002559", 3, 3, 2),
+      // 디자인경영전공 권장 사이버강의 (교과과정책자 기준)
+      co("언어의이해 (사이버)", "002173", 3, 0, 0),
+      co("이미지와상상력 (사이버)", "002213", 3, 0, 0),
+      co("사운드와컴퓨터음악 (사이버)", "002620", 3, 0, 0),
+      co("인간심리의이해 (사이버)", "002529", 3, 0, 0),
     ],
   },
   {
@@ -147,12 +152,30 @@ let data = load();
 let yearFilter = "all";
 
 function load() {
+  let saved;
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : structuredClone(defaultData);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    saved = raw ? JSON.parse(raw) : null;
   } catch {
-    return structuredClone(defaultData);
+    saved = null;
   }
+  if (!saved) return structuredClone(defaultData);
+  return refreshCatalog(saved);
+}
+
+// 저장된 진행상황(체크·담은 과목·순서)은 그대로 두고,
+// 과목 목록(catalog)과 안내문(note)은 코드에서 최신으로 갱신한다.
+function refreshCatalog(saved) {
+  const defByName = {};
+  defaultData.forEach((c) => (defByName[c.name] = c));
+  saved.forEach((cat) => {
+    const def = defByName[cat.name];
+    if (def) {
+      cat.catalog = structuredClone(def.catalog);
+      cat.note = def.note;
+    }
+  });
+  return saved;
 }
 
 function save() {
