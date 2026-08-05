@@ -1,16 +1,30 @@
 // 졸업요건 대시보드 — 홍익대 디자인·예술경영학부 디자인경영전공 (2026학번 기준)
 // 과목을 학기/영역별로 담아 이수 현황을 계산합니다.
 // 이 브라우저에 자동 저장되고, 로그인하면 기기 간 동기화됩니다.
-const STORAGE_KEY = "hd-graduate-v4";
+const STORAGE_KEY = "hd-graduate-v5";
 
-const AREAS = ["전공필수", "전공선택", "교양", "자유선택"];
-const REQ = { 전공필수: 15, 전공선택: 35, 교양: 50, 자유선택: 32 }; // 합계 132
+// 실제 졸업요건 영역 (합계 132학점)
+const AREAS = [
+  "전공필수", "전공선택", "전공기초",
+  "교양필수", "특성화교양", "SW·데이터활용", "공통교양",
+  "자유선택",
+];
+const REQ = {
+  전공필수: 15, 전공선택: 35, 전공기초: 2,
+  교양필수: 6, 특성화교양: 3, "SW·데이터활용": 9, 공통교양: 18,
+  자유선택: 44,
+}; // 15+35+2+6+3+9+18+44 = 132
 const TOTAL = 132;
 const SEMS = ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
-const AREA_TAG = { 전공필수: "전필", 전공선택: "전선", 교양: "교양", 자유선택: "자유" };
+const AREA_TAG = {
+  전공필수: "전필", 전공선택: "전선", 전공기초: "전기",
+  교양필수: "교필", 특성화교양: "특교", "SW·데이터활용": "SW", 공통교양: "공교",
+  자유선택: "자유",
+};
+const CYBER_LIMIT = 24; // 사이버강의 재학 중 최대 이수 학점
 
-// 실제 교과과정 과목 (자동완성용). k(과목명, 영역, 학점, 학기|null)
-const k = (name, area, credits, semester) => ({ name, area, credits, semester });
+// 실제 교과과정 과목 (검색용). k(과목명, 영역, 학점, 학기|null, 사이버여부)
+const k = (name, area, credits, semester, cyber = false) => ({ name, area, credits, semester, cyber });
 const CATALOG = [
   // 전공필수
   k("경제학원론", "전공필수", 3, "1-1"),
@@ -18,8 +32,8 @@ const CATALOG = [
   k("기업과경영", "전공필수", 3, "1-2"),
   k("인간공학", "전공필수", 3, "2-1"),
   k("기업법", "전공필수", 3, "3-2"),
-  // 전공기초 (전공선택으로 분류)
-  k("전공기초영어(Ⅰ/Ⅱ 택1)", "전공선택", 2, "1-2"),
+  // 전공기초
+  k("전공기초영어(Ⅰ/Ⅱ 택1)", "전공기초", 2, "1-2"),
   // 전공선택 1학년
   k("회계원리", "전공선택", 3, "1-1"),
   k("공연예술사", "전공선택", 3, "1-1"),
@@ -64,19 +78,22 @@ const CATALOG = [
   k("물류경영", "전공선택", 3, "4-2"),
   k("비즈니스디자인현장실습", "전공선택", 3, "4-2"),
   k("박물관학과미술경영", "전공선택", 3, "4-2"),
-  // 교양필수 / 특성화 / 공통교양 / 사이버
-  k("대학영어", "교양", 3, "1-1"),
-  k("논리적사고와글쓰기(경영)", "교양", 3, "1-1"),
-  k("컴퓨팅사고", "교양", 3, null),
-  k("디자인씽킹", "교양", 3, null),
-  k("창업과실용법률", "교양", 3, null),
-  k("교양중국어(1)", "교양", 3, "1-1"),
-  k("문학과창의적사고", "교양", 3, "3-1"),
-  k("예술과법", "교양", 3, "3-2"),
-  k("언어의이해 (사이버)", "교양", 3, null),
-  k("이미지와상상력 (사이버)", "교양", 3, null),
-  k("사운드와컴퓨터음악 (사이버)", "교양", 3, null),
-  k("인간심리의이해 (사이버)", "교양", 3, null),
+  // 교양필수
+  k("대학영어", "교양필수", 3, "1-1"),
+  k("논리적사고와글쓰기(경영)", "교양필수", 3, "1-1"),
+  // 특성화교양 (사이버강좌 · 셋 중 택1)
+  k("컴퓨팅사고", "특성화교양", 3, null, true),
+  k("디자인씽킹", "특성화교양", 3, null, true),
+  k("창업과실용법률", "특성화교양", 3, null, true),
+  // 공통교양
+  k("교양중국어(1)", "공통교양", 3, "1-1"),
+  k("문학과창의적사고", "공통교양", 3, "3-1"),
+  k("예술과법", "공통교양", 3, "3-2"),
+  // 공통교양 · 사이버강의 (디자인경영전공 권장)
+  k("언어의이해 (사이버)", "공통교양", 3, null, true),
+  k("이미지와상상력 (사이버)", "공통교양", 3, null, true),
+  k("사운드와컴퓨터음악 (사이버)", "공통교양", 3, null, true),
+  k("인간심리의이해 (사이버)", "공통교양", 3, null, true),
   // 자유선택
   k("졸업논문", "자유선택", 3, null),
 ];
@@ -100,16 +117,20 @@ function isValidCourse(c) {
   );
 }
 function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 4, courses }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 5, courses }));
   if (window.cloudSave) window.cloudSave(getState());
 }
-function getState() { return { v: 4, courses }; }
+function getState() { return { v: 5, courses }; }
 
 // --- 파생 계산 ---
 function earnedByArea() {
-  const m = { 전공필수: 0, 전공선택: 0, 교양: 0, 자유선택: 0 };
+  const m = {};
+  AREAS.forEach((a) => (m[a] = 0));
   courses.forEach((c) => (m[c.area] += Number(c.credits) || 0));
   return m;
+}
+function cyberEarned() {
+  return courses.filter((c) => c.cyber).reduce((s, c) => s + (Number(c.credits) || 0), 0);
 }
 function coursesBySemester(sem) {
   return courses.filter((c) => c.semester === sem);
@@ -149,13 +170,26 @@ function renderAreas() {
     return `
       <div class="area-card">
         <div class="area-card-top">
-          <span class="area-name">${area}</span>
+          <span class="area-name">${escapeHtml(area)}</span>
           ${badge}
         </div>
         <div class="area-credits">${e}<span> / ${req}학점</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       </div>`;
   }).join("");
+}
+
+function renderCyber() {
+  const bar = document.getElementById("cyberBar");
+  const used = cyberEarned();
+  const pct = Math.min(100, Math.round((used / CYBER_LIMIT) * 100));
+  const over = used > CYBER_LIMIT;
+  bar.className = "cyber-bar" + (over ? " over" : "");
+  bar.innerHTML = `
+    <span class="cy-count">🖥 사이버강의 <b>${used}</b> / ${CYBER_LIMIT}학점</span>
+    <div class="cy-track"><div class="cy-fill" style="width:${pct}%"></div></div>
+    <span class="cy-note">${over ? "한도 초과! 24학점까지만 인정돼요" : "재학 중 최대 24학점까지 인정 (학기당 신청 제한은 공지 확인)"}</span>
+  `;
 }
 
 function renderRoadmap() {
@@ -168,7 +202,7 @@ function renderRoadmap() {
           .map(
             (c) => `
         <div class="chip-course">
-          <span class="c-tag">${AREA_TAG[c.area]}</span>
+          <span class="c-tag">${AREA_TAG[c.area] || ""}</span>
           <span class="c-name" title="${escapeAttr(c.name)}">${escapeHtml(c.name)}</span>
           <span class="c-credit">${c.credits}</span>
           <button class="c-del" data-del="${c.id}" title="삭제">×</button>
@@ -191,21 +225,22 @@ function renderRoadmap() {
 function renderAll() {
   renderHeader();
   renderAreas();
+  renderCyber();
   renderRoadmap();
 }
 
 function escapeAttr(s) { return String(s).replace(/"/g, "&quot;"); }
 function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-// --- 폼 초기화 ---
+// ===== 폼 =====
+let comboItems = [];
+let comboActive = -1;
+
 function initForm() {
   const semSel = document.getElementById("fSemester");
   semSel.innerHTML = SEMS.map((s) => `<option value="${s}">${semLabel(s)}</option>`).join("");
   const areaSel = document.getElementById("fArea");
   areaSel.innerHTML = AREAS.map((a) => `<option value="${a}">${a}</option>`).join("");
-  document.getElementById("courseList").innerHTML = CATALOG.map(
-    (c) => `<option value="${escapeAttr(c.name)}"></option>`
-  ).join("");
 
   semSel.value = form.semester;
   areaSel.value = form.area;
@@ -215,41 +250,121 @@ function initForm() {
   areaSel.addEventListener("change", (e) => (form.area = e.target.value));
   document.getElementById("fCredits").addEventListener("change", (e) => (form.credits = e.target.value));
 
-  // 과목명 입력 시 실제 과목이면 영역/학점/학기 자동 채움
   const nameInput = document.getElementById("fName");
-  nameInput.addEventListener("input", (e) => {
-    const hit = CATALOG.find((c) => c.name === e.target.value);
-    if (hit) {
-      areaSel.value = hit.area; form.area = hit.area;
-      document.getElementById("fCredits").value = String(hit.credits); form.credits = String(hit.credits);
-      if (hit.semester) { semSel.value = hit.semester; form.semester = hit.semester; }
-    }
+  nameInput.addEventListener("input", () => openCombo(nameInput.value));
+  nameInput.addEventListener("focus", () => { if (nameInput.value) openCombo(nameInput.value); });
+  nameInput.addEventListener("keydown", onComboKey);
+
+  // 리스트 항목 선택 (mousedown: 포커스 유지)
+  document.getElementById("comboList").addEventListener("mousedown", (e) => {
+    const item = e.target.closest(".combo-item");
+    if (!item) return;
+    e.preventDefault();
+    selectCombo(item.dataset.name);
   });
-  nameInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") { e.preventDefault(); addCourse(); }
+
+  // 바깥 클릭 시 닫기
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".combo")) closeCombo();
   });
 
   document.getElementById("addBtn").addEventListener("click", addCourse);
+}
+
+function openCombo(query) {
+  const q = query.trim().toLowerCase();
+  comboItems = (q
+    ? CATALOG.filter((c) => c.name.toLowerCase().includes(q))
+    : CATALOG
+  ).slice(0, 30);
+  comboActive = -1;
+  renderCombo();
+}
+
+function renderCombo() {
+  const list = document.getElementById("comboList");
+  if (comboItems.length === 0) {
+    list.innerHTML = `<div class="combo-empty">일치하는 과목이 없어요. 그대로 입력해 직접 추가할 수 있어요.</div>`;
+    list.hidden = false;
+    return;
+  }
+  list.innerHTML = comboItems
+    .map((c, i) => {
+      const meta = [AREA_TAG[c.area], `${c.credits}학점`, c.semester ? semLabel(c.semester) : "학기 무관"]
+        .filter(Boolean)
+        .join(" · ");
+      return `<div class="combo-item ${i === comboActive ? "active" : ""}" data-name="${escapeAttr(c.name)}">
+        <span class="ci-name">${escapeHtml(c.name)}${c.cyber ? " 💻" : ""}</span>
+        <span class="ci-meta">${meta}</span>
+      </div>`;
+    })
+    .join("");
+  list.hidden = false;
+}
+
+function closeCombo() {
+  const list = document.getElementById("comboList");
+  if (list) list.hidden = true;
+  comboActive = -1;
+}
+
+function selectCombo(name) {
+  const hit = CATALOG.find((c) => c.name === name);
+  const nameInput = document.getElementById("fName");
+  nameInput.value = name;
+  if (hit) {
+    const areaSel = document.getElementById("fArea");
+    const credSel = document.getElementById("fCredits");
+    const semSel = document.getElementById("fSemester");
+    areaSel.value = hit.area; form.area = hit.area;
+    credSel.value = String(hit.credits); form.credits = String(hit.credits);
+    if (hit.semester) { semSel.value = hit.semester; form.semester = hit.semester; }
+  }
+  closeCombo();
+  nameInput.focus();
+}
+
+function onComboKey(e) {
+  const list = document.getElementById("comboList");
+  const open = list && !list.hidden && comboItems.length > 0;
+  if (e.key === "ArrowDown" && open) {
+    e.preventDefault();
+    comboActive = (comboActive + 1) % comboItems.length;
+    renderCombo();
+  } else if (e.key === "ArrowUp" && open) {
+    e.preventDefault();
+    comboActive = (comboActive - 1 + comboItems.length) % comboItems.length;
+    renderCombo();
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (open && comboActive >= 0) selectCombo(comboItems[comboActive].name);
+    else addCourse();
+  } else if (e.key === "Escape") {
+    closeCombo();
+  }
 }
 
 function addCourse() {
   const nameInput = document.getElementById("fName");
   const name = nameInput.value.trim();
   if (!name) return;
+  const cat = CATALOG.find((c) => c.name === name);
   courses.push({
     id: "c" + Date.now() + Math.random().toString(36).slice(2, 6),
     name,
     area: form.area,
     credits: Number(form.credits) || 0,
     semester: form.semester,
+    cyber: cat ? !!cat.cyber : false,
   });
-  nameInput.value = ""; // 과목명만 비우고 학기/영역/학점은 유지
+  nameInput.value = "";
+  closeCombo();
   persist();
   renderAll();
   nameInput.focus();
 }
 
-// --- 삭제 (이벤트 위임) ---
+// --- 삭제 ---
 document.addEventListener("click", (e) => {
   const del = e.target.closest("[data-del]");
   if (del) {
@@ -275,7 +390,7 @@ window.getAppData = getState;
 window.setAppData = (incoming) => {
   if (!incoming || !Array.isArray(incoming.courses)) return; // 옛 형식/손상 데이터 무시
   courses = incoming.courses.filter(isValidCourse);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 4, courses }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 5, courses }));
   renderAll();
 };
 

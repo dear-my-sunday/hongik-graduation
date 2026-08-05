@@ -38,12 +38,17 @@
     <!-- ② 영역별 요건 카드 -->
     <section class="area-grid" id="areaGrid"></section>
 
+    <!-- 사이버강의 이수 한도 -->
+    <div class="cyber-bar" id="cyberBar"></div>
+
     <!-- ③ 과목 추가 폼 -->
     <section class="add-form">
       <select id="fSemester" aria-label="학기"></select>
       <select id="fArea" aria-label="영역"></select>
-      <input id="fName" list="courseList" placeholder="과목명 (입력 시 실제 과목 추천)" autocomplete="off" />
-      <datalist id="courseList"></datalist>
+      <div class="combo">
+        <input id="fName" placeholder="과목명 검색 (예: 마케팅)" autocomplete="off" />
+        <div class="combo-list" id="comboList" hidden></div>
+      </div>
       <select id="fCredits" aria-label="학점">
         <option value="1">1학점</option>
         <option value="2">2학점</option>
