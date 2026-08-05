@@ -7,10 +7,11 @@
 //
 //  ⚠️ 이 값들은 공개돼도 안전한 웹앱용 공개키입니다. (비밀번호 아님)
 window.FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyCzQyBklYpsndoza0ufKPFHJ0C9tQO-eQU",
+  authDomain: "hongik-graduation-92bea.firebaseapp.com",
+  projectId: "hongik-graduation-92bea",
+  storageBucket: "hongik-graduation-92bea.firebasestorage.app",
+  messagingSenderId: "99693552978",
+  appId: "1:99693552978:web:f90106bc1ec564ee12068b",
+  measurementId: "G-76NYWQG7BD",
 };
