@@ -3,54 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>졸업요건 정리 · 디자인경영전공</title>
+  <title>졸업요건 대시보드 · 디자인경영전공</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- ① 헤더 배너 -->
   <header class="site-header">
-    <div class="wrap header-row">
-      <div>
-        <h1>졸업요건 정리</h1>
-        <p class="sub">홍익대 디자인·예술경영학부 · 디자인경영전공</p>
+    <div class="wrap dash-header">
+      <div class="dash-left">
+        <div class="donut-wrap">
+          <svg viewBox="0 0 120 120" class="donut">
+            <circle class="donut-track" cx="60" cy="60" r="52" />
+            <circle class="donut-fill" id="donutFill" cx="60" cy="60" r="52" />
+          </svg>
+          <div class="donut-center">
+            <span class="donut-pct" id="donutPct">0%</span>
+            <span class="donut-sub" id="donutSub">0 / 132</span>
+          </div>
+        </div>
+        <div class="title-block">
+          <div class="dept-label">홍익대 디자인·예술경영학부 · 디자인경영전공</div>
+          <h1>졸업요건 대시보드</h1>
+          <div class="remaining">졸업까지 <b id="remainTotal">132학점</b> 남음</div>
+        </div>
       </div>
-      <div class="auth-box" id="authBox">
-        <!-- 로그인 상태에 따라 auth.js가 채웁니다 -->
+      <div class="dash-right">
+        <div class="auth-box" id="authBox"></div>
+        <button id="resetBtn" class="btn small">초기화</button>
       </div>
     </div>
   </header>
 
   <main class="wrap">
-    <!-- 전체 진행률 -->
-    <section class="overview">
-      <div class="overview-head">
-        <h2>전체 이수 현황</h2>
-        <span id="totalSummary" class="chip">0 / 132 학점</span>
-      </div>
-      <div class="progress-bar">
-        <div id="totalProgress" class="progress-fill"></div>
-      </div>
-      <p class="overview-note">졸업 기준 <b>총 132학점</b> · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정</p>
+    <!-- ② 영역별 요건 카드 -->
+    <section class="area-grid" id="areaGrid"></section>
+
+    <!-- ③ 과목 추가 폼 -->
+    <section class="add-form">
+      <select id="fSemester" aria-label="학기"></select>
+      <select id="fArea" aria-label="영역"></select>
+      <input id="fName" list="courseList" placeholder="과목명 (입력 시 실제 과목 추천)" autocomplete="off" />
+      <datalist id="courseList"></datalist>
+      <select id="fCredits" aria-label="학점">
+        <option value="1">1학점</option>
+        <option value="2">2학점</option>
+        <option value="3" selected>3학점</option>
+      </select>
+      <button id="addBtn" class="btn accent">+ 과목 추가</button>
     </section>
 
-    <!-- 학년 필터 -->
-    <section class="filter-bar">
-      <span class="filter-label">학년별 보기</span>
-      <div class="filter-chips" id="yearFilter">
-        <button class="fchip active" data-year="all">전체</button>
-        <button class="fchip" data-year="1">1학년</button>
-        <button class="fchip" data-year="2">2학년</button>
-        <button class="fchip" data-year="3">3학년</button>
-        <button class="fchip" data-year="4">4학년</button>
-      </div>
-    </section>
-
-    <!-- 카테고리별 요건 -->
+    <!-- ④ 학기 로드맵 -->
     <section>
-      <div class="section-head">
-        <h2>영역별 요건</h2>
-        <button id="addCategoryBtn" class="btn small">+ 영역 추가</button>
-      </div>
-      <div id="categories" class="categories"></div>
+      <div class="section-head"><h2>학기 로드맵</h2></div>
+      <div class="roadmap" id="roadmap"></div>
     </section>
 
     <!-- 바로가기 -->
@@ -69,8 +74,7 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>자료 출처: 2026 교과과정책자(안) 및 학과 공지. 실제 수강신청·졸업 처리 전 학과 공지를 반드시 확인하세요.</p>
-      <button id="resetBtn" class="btn small">처음 상태로 초기화</button>
+      <p>졸업 기준 총 132학점 · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정. 자료 출처: 2026 교과과정책자(안). 실제 수강신청·졸업 처리 전 학과 공지를 꼭 확인하세요.</p>
     </div>
   </footer>
 
