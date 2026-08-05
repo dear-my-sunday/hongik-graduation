@@ -22,6 +22,16 @@ const AREA_TAG = {
   자유선택: "자유",
 };
 const CYBER_LIMIT = 24; // 사이버강의 재학 중 최대 이수 학점
+const AREA_DESC = {
+  전공필수: "반드시 듣는 전공 과목",
+  전공선택: "골라 듣는 전공 (전공 합 50학점)",
+  전공기초: "전공기초영어(Ⅰ/Ⅱ 택1)",
+  교양필수: "대학영어·논리적사고와글쓰기",
+  특성화교양: "컴퓨팅사고/디자인씽킹/창업과실용법률 중 택1",
+  "SW·데이터활용": "SW·데이터 역량 인증 과목",
+  공통교양: "7개 영역 중 6개에서 각 1과목",
+  자유선택: "나머지 + 졸업논문 (여유분)",
+};
 
 // 실제 교과과정 과목 (검색용). k(과목명, 영역, 학점, 학기|null, 사이버여부)
 const k = (name, area, credits, semester, cyber = false) => ({ name, area, credits, semester, cyber });
@@ -173,6 +183,7 @@ function renderAreas() {
           <span class="area-name">${escapeHtml(area)}</span>
           ${badge}
         </div>
+        <div class="area-desc">${escapeHtml(AREA_DESC[area] || "")}</div>
         <div class="area-credits">${e}<span> / ${req}학점</span></div>
         <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
       </div>`;
@@ -390,6 +401,12 @@ window.getAppData = getState;
 window.setAppData = (incoming) => {
   if (!incoming || !Array.isArray(incoming.courses)) return; // 옛 형식/손상 데이터 무시
   courses = incoming.courses.filter(isValidCourse);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 5, courses }));
+  renderAll();
+};
+// 로그아웃 시 화면을 비운다 (클라우드에는 저장하지 않음 — 계정 데이터 보존)
+window.clearAppData = () => {
+  courses = [];
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 5, courses }));
   renderAll();
 };

@@ -113,6 +113,7 @@ main { padding: 26px 0 60px; }
   border: 1px solid var(--line); color: var(--muted); white-space: nowrap;
 }
 .badge.done { background: var(--accent); color: #fff; border-color: var(--accent); }
+.area-desc { font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.35; min-height: 30px; }
 .area-credits { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
 .area-credits span { font-size: 13px; color: var(--muted); font-weight: 500; }
 .progress-bar { height: 8px; background: var(--soft); border-radius: 999px; overflow: hidden; margin-top: 10px; }
@@ -202,6 +203,17 @@ main { padding: 26px 0 60px; }
   font-size: 14px; padding: 0 2px; line-height: 1;
 }
 .chip-course .c-del:hover { color: #e11; }
+
+/* 저장 CTA */
+.save-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 16px 20px; margin-top: 26px; background: var(--soft);
+}
+.save-info { display: flex; flex-direction: column; gap: 2px; }
+.save-info b { font-size: 14px; }
+.save-status { font-size: 12.5px; color: var(--muted); }
+.save-bar .btn { flex-shrink: 0; }
 
 /* Links */
 .links { margin-top: 26px; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
