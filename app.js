@@ -253,9 +253,7 @@ function initForm() {
   const areaSel = document.getElementById("fArea");
   areaSel.innerHTML = AREAS.map((a) => `<option value="${a}">${a}</option>`).join("");
 
-  semSel.value = form.semester;
-  areaSel.value = form.area;
-  document.getElementById("fCredits").value = form.credits;
+  syncFormToUI();
 
   semSel.addEventListener("change", (e) => (form.semester = e.target.value));
   areaSel.addEventListener("change", (e) => (form.area = e.target.value));
@@ -266,7 +264,6 @@ function initForm() {
   nameInput.addEventListener("focus", () => { if (nameInput.value) openCombo(nameInput.value); });
   nameInput.addEventListener("keydown", onComboKey);
 
-  // 리스트 항목 선택 (mousedown: 포커스 유지)
   document.getElementById("comboList").addEventListener("mousedown", (e) => {
     const item = e.target.closest(".combo-item");
     if (!item) return;
@@ -274,12 +271,59 @@ function initForm() {
     selectCombo(item.dataset.name);
   });
 
-  // 바깥 클릭 시 닫기
+  // 콤보: 콤보 바깥 클릭 시 목록 닫기
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".combo")) closeCombo();
   });
 
+  // 패널 열기/닫기
+  document.getElementById("addToggle").addEventListener("click", togglePanel);
+  document.getElementById("apClose").addEventListener("click", closePanel);
+  document.getElementById("apCancel").addEventListener("click", closePanel);
+  document.getElementById("apReset").addEventListener("click", resetForm);
   document.getElementById("addBtn").addEventListener("click", addCourse);
+
+  // 패널 바깥 클릭 시 닫기
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".add-wrap")) closePanel();
+  });
+}
+
+function syncFormToUI() {
+  document.getElementById("fSemester").value = form.semester;
+  document.getElementById("fArea").value = form.area;
+  document.getElementById("fCredits").value = form.credits;
+}
+
+function openPanel() {
+  document.getElementById("addPanel").hidden = false;
+  document.getElementById("addToggle").classList.add("open");
+  setApStatus("");
+  document.getElementById("fName").focus();
+}
+function closePanel() {
+  document.getElementById("addPanel").hidden = true;
+  document.getElementById("addToggle").classList.remove("open");
+  closeCombo();
+}
+function togglePanel() {
+  if (document.getElementById("addPanel").hidden) openPanel();
+  else closePanel();
+}
+
+function resetForm() {
+  form = { semester: "1-1", area: "전공필수", credits: "3" };
+  syncFormToUI();
+  const nm = document.getElementById("fName");
+  nm.value = "";
+  closeCombo();
+  setApStatus("");
+  nm.focus();
+}
+
+function setApStatus(text) {
+  const el = document.getElementById("apStatus");
+  if (el) el.textContent = text;
 }
 
 function openCombo(query) {
@@ -372,6 +416,7 @@ function addCourse() {
   closeCombo();
   persist();
   renderAll();
+  setApStatus(`추가됨 · ${name}`); // 패널은 열어둬 연속 추가 가능
   nameInput.focus();
 }
 
@@ -389,8 +434,7 @@ document.addEventListener("click", (e) => {
 document.getElementById("resetBtn").addEventListener("click", () => {
   if (confirm("담은 과목을 모두 지울까요?")) {
     courses = [];
-    form = { semester: "1-1", area: "전공필수", credits: "3" };
-    initForm();
+    resetForm();
     persist();
     renderAll();
   }

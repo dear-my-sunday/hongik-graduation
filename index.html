@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>졸업요건 대시보드 · 디자인경영전공</title>
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
   <!-- ① 헤더 배너 -->
@@ -41,21 +41,49 @@
     <!-- 사이버강의 이수 한도 -->
     <div class="cyber-bar" id="cyberBar"></div>
 
-    <!-- ③ 과목 추가 폼 -->
-    <section class="add-form">
-      <select id="fSemester" aria-label="학기"></select>
-      <select id="fArea" aria-label="영역"></select>
-      <div class="combo">
-        <input id="fName" placeholder="과목명 검색 (예: 마케팅)" autocomplete="off" />
-        <div class="combo-list" id="comboList" hidden></div>
+    <!-- ③ 과목 추가 (필터형 패널) -->
+    <div class="add-wrap">
+      <button id="addToggle" class="btn accent add-toggle">＋ 과목 추가</button>
+      <div class="add-panel" id="addPanel" hidden>
+        <div class="ap-head">
+          <span>과목 추가</span>
+          <button class="ap-close" id="apClose" aria-label="닫기">×</button>
+        </div>
+
+        <label class="ap-label" for="fName">과목 검색</label>
+        <div class="combo">
+          <input id="fName" placeholder="과목명 검색 (예: 마케팅)" autocomplete="off" />
+          <div class="combo-list" id="comboList" hidden></div>
+        </div>
+
+        <div class="ap-row">
+          <div>
+            <label class="ap-label" for="fSemester">학기</label>
+            <select id="fSemester" aria-label="학기"></select>
+          </div>
+          <div>
+            <label class="ap-label" for="fCredits">학점</label>
+            <select id="fCredits" aria-label="학점">
+              <option value="1">1학점</option>
+              <option value="2">2학점</option>
+              <option value="3" selected>3학점</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="ap-label" for="fArea">영역</label>
+        <select id="fArea" aria-label="영역"></select>
+
+        <div class="ap-actions">
+          <button id="apReset" class="ap-link">초기화</button>
+          <div class="ap-right">
+            <span class="ap-status" id="apStatus"></span>
+            <button id="apCancel" class="btn small">닫기</button>
+            <button id="addBtn" class="btn accent">추가</button>
+          </div>
+        </div>
       </div>
-      <select id="fCredits" aria-label="학점">
-        <option value="1">1학점</option>
-        <option value="2">2학점</option>
-        <option value="3" selected>3학점</option>
-      </select>
-      <button id="addBtn" class="btn accent">+ 과목 추가</button>
-    </section>
+    </div>
 
     <!-- ④ 학기 로드맵 -->
     <section>
@@ -86,8 +114,8 @@
     </div>
   </footer>
 
-  <script src="firebase-config.js?v=6"></script>
-  <script src="app.js?v=6"></script>
-  <script type="module" src="auth.js?v=6"></script>
+  <script src="firebase-config.js?v=7"></script>
+  <script src="app.js?v=7"></script>
+  <script type="module" src="auth.js?v=7"></script>
 </body>
 </html>
