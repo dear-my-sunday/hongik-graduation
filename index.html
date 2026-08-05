@@ -8,9 +8,14 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="wrap">
-      <h1>🎓 졸업요건 정리</h1>
-      <p class="sub">홍익대 디자인·예술경영학부 · 디자인경영전공</p>
+    <div class="wrap header-row">
+      <div>
+        <h1>졸업요건 정리</h1>
+        <p class="sub">홍익대 디자인·예술경영학부 · 디자인경영전공</p>
+      </div>
+      <div class="auth-box" id="authBox">
+        <!-- 로그인 상태에 따라 auth.js가 채웁니다 -->
+      </div>
     </div>
   </header>
 
@@ -43,19 +48,34 @@
     <section>
       <div class="section-head">
         <h2>영역별 요건</h2>
-        <button id="addCategoryBtn" class="btn ghost">+ 영역 추가</button>
+        <button id="addCategoryBtn" class="btn small">+ 영역 추가</button>
       </div>
       <div id="categories" class="categories"></div>
+    </section>
+
+    <!-- 바로가기 -->
+    <section class="links">
+      <h2>바로가기</h2>
+      <ul>
+        <li><a href="https://cn.hongik.ac.kr/app/timetable/" target="_blank" rel="noopener">
+          강의시간표 · 수강신청 <span class="desc">개설 과목/시간 확인</span><span class="arrow">↗</span></a></li>
+        <li><a href="https://www.hongik.ac.kr/kr/education/cyber-lecture.do" target="_blank" rel="noopener">
+          사이버강의 안내 <span class="desc">특성화교양(컴퓨팅사고 등)</span><span class="arrow">↗</span></a></li>
+        <li><a href="https://iim.hongik.ac.kr/iim/0401.do?mode=view&articleNo=153752" target="_blank" rel="noopener">
+          졸업논문 공지 <span class="desc">디자인·예술경영학부</span><span class="arrow">↗</span></a></li>
+      </ul>
     </section>
   </main>
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>체크 기록은 이 브라우저에 자동 저장돼요. · 자료 출처: 2026 교과과정책자(안). 실제 수강신청 전 학과 공지를 꼭 확인하세요.</p>
-      <button id="resetBtn" class="btn ghost small">처음 상태로 초기화</button>
+      <p>자료 출처: 2026 교과과정책자(안) 및 학과 공지. 실제 수강신청·졸업 처리 전 학과 공지를 반드시 확인하세요.</p>
+      <button id="resetBtn" class="btn small">처음 상태로 초기화</button>
     </div>
   </footer>
 
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script type="module" src="auth.js"></script>
 </body>
 </html>
