@@ -80,6 +80,49 @@ main { padding: 28px 0 60px; }
   white-space: nowrap;
 }
 
+.overview-note {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.overview-note b { color: var(--ink); }
+
+/* Year filter */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.filter-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.fchip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fchip:hover { border-color: var(--accent); color: var(--accent); }
+.fchip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* Year badge on course */
+.year-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 6px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+.sem-tag { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
 /* Section head */
 .section-head {
   display: flex;
@@ -136,6 +179,8 @@ main { padding: 28px 0 60px; }
 .mini-fill { height: 100%; width: 0%; background: var(--done); border-radius: 999px; transition: width 0.3s; }
 
 .courses { border-top: 1px solid var(--line); padding: 8px 18px 16px; }
+.cat-note { margin: 10px 0 6px; font-size: 12.5px; color: var(--muted); }
+.cat-target { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; color: var(--muted); font-size: 12px; }
 .course {
   display: flex;
   align-items: center;

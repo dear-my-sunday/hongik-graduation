@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>졸업요건 정리 · 홍익대</title>
+  <title>졸업요건 정리 · 디자인경영전공</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
       <h1>🎓 졸업요건 정리</h1>
-      <p class="sub">내가 뭘 들어야 졸업할 수 있는지 한눈에 보기</p>
+      <p class="sub">홍익대 디자인·예술경영학부 · 디자인경영전공</p>
     </div>
   </header>
 
@@ -19,10 +19,23 @@
     <section class="overview">
       <div class="overview-head">
         <h2>전체 이수 현황</h2>
-        <span id="totalSummary" class="chip">0 / 0 학점</span>
+        <span id="totalSummary" class="chip">0 / 132 학점</span>
       </div>
       <div class="progress-bar">
         <div id="totalProgress" class="progress-fill"></div>
+      </div>
+      <p class="overview-note">졸업 기준 <b>총 132학점</b> · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정</p>
+    </section>
+
+    <!-- 학년 필터 -->
+    <section class="filter-bar">
+      <span class="filter-label">학년별 보기</span>
+      <div class="filter-chips" id="yearFilter">
+        <button class="fchip active" data-year="all">전체</button>
+        <button class="fchip" data-year="1">1학년</button>
+        <button class="fchip" data-year="2">2학년</button>
+        <button class="fchip" data-year="3">3학년</button>
+        <button class="fchip" data-year="4">4학년</button>
       </div>
     </section>
 
@@ -38,8 +51,8 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>기록은 이 브라우저에 자동 저장돼요. GitHub에 올려두면 어느 기기에서든 이어서 볼 수 있어요.</p>
-      <button id="resetBtn" class="btn ghost small">기록 초기화</button>
+      <p>체크 기록은 이 브라우저에 자동 저장돼요. · 자료 출처: 2026 교과과정책자(안). 실제 수강신청 전 학과 공지를 꼭 확인하세요.</p>
+      <button id="resetBtn" class="btn ghost small">처음 상태로 초기화</button>
     </div>
   </footer>
 
