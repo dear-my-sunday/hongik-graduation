@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>졸업요건 대시보드 · 디자인경영전공</title>
-  <link rel="stylesheet" href="style.css?v=10" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body>
   <!-- ① 헤더 배너 -->
@@ -35,60 +35,64 @@
   </header>
 
   <main class="wrap">
-    <!-- ② 영역별 요건 (그룹) -->
+    <!-- 대시보드: 영역별 요건 -->
     <section id="groups" class="groups"></section>
 
     <!-- 사이버강의 이수 한도 -->
     <div class="cyber-bar" id="cyberBar"></div>
 
-    <!-- ③ 과목 추가 (필터형 패널) -->
-    <div class="add-wrap">
-      <button id="addToggle" class="btn accent add-toggle">＋ 과목 추가</button>
-      <div class="add-panel" id="addPanel" hidden>
-        <div class="ap-head">
-          <span>과목 추가</span>
-          <button class="ap-close" id="apClose" aria-label="닫기">×</button>
-        </div>
+    <!-- 대시보드 / 로드맵 구분 -->
+    <div class="dash-divider"></div>
 
-        <div class="ap-row">
-          <div>
-            <label class="ap-label" for="fSemester">학기</label>
-            <select id="fSemester" aria-label="학기"></select>
+    <!-- 학기 로드맵 + 과목 추가 -->
+    <section class="roadmap-section">
+      <div class="section-head"><h2>학기 로드맵</h2></div>
+      <div class="roadmap" id="roadmap"></div>
+
+      <div class="add-wrap">
+        <button id="addToggle" class="btn accent add-toggle">＋ 과목 추가</button>
+        <div class="add-panel" id="addPanel" hidden>
+          <div class="ap-head">
+            <span>과목 추가</span>
+            <button class="ap-close" id="apClose" aria-label="닫기">×</button>
           </div>
-          <div>
-            <label class="ap-label" for="fCredits">학점</label>
-            <select id="fCredits" aria-label="학점">
-              <option value="1">1학점</option>
-              <option value="2">2학점</option>
-              <option value="3" selected>3학점</option>
-            </select>
+
+          <label class="ap-label ap-step">① 어떤 과목을 담을까요?</label>
+          <div class="picker2" id="picker2" data-cols="2">
+            <div class="pk-cats" id="pkCats"></div>
+            <div class="pk-subs" id="pkSubs" hidden></div>
+            <div class="pk-courses" id="pkCourses"></div>
           </div>
-        </div>
 
-        <label class="ap-label" for="fArea">영역</label>
-        <select id="fArea" aria-label="영역"></select>
+          <label class="ap-label ap-step">② 어디에 담을까요?</label>
+          <div class="ap-dest">
+            <div class="sel-name" id="selName">먼저 과목을 선택하세요</div>
+            <div class="ap-row">
+              <div>
+                <label class="ap-label" for="fSemester">학기</label>
+                <select id="fSemester" aria-label="학기"></select>
+              </div>
+              <div>
+                <label class="ap-label" for="fCredits">학점</label>
+                <select id="fCredits" aria-label="학점">
+                  <option value="1">1학점</option>
+                  <option value="2">2학점</option>
+                  <option value="3" selected>3학점</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
-        <label class="ap-label">과목 선택</label>
-        <div class="picker2">
-          <div class="pk-cats" id="pkCats"></div>
-          <div class="pk-courses" id="pkCourses"></div>
-        </div>
-
-        <div class="ap-actions">
-          <button id="apReset" class="ap-link">초기화</button>
-          <div class="ap-right">
-            <span class="ap-status" id="apStatus"></span>
-            <button id="apCancel" class="btn small">닫기</button>
-            <button id="addBtn" class="btn accent">추가</button>
+          <div class="ap-actions">
+            <button id="apReset" class="ap-link">초기화</button>
+            <div class="ap-right">
+              <span class="ap-status" id="apStatus"></span>
+              <button id="apCancel" class="btn small">닫기</button>
+              <button id="addBtn" class="btn accent">추가</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- ④ 학기 로드맵 -->
-    <section>
-      <div class="section-head"><h2>학기 로드맵</h2></div>
-      <div class="roadmap" id="roadmap"></div>
     </section>
 
     <!-- 저장 CTA -->
@@ -110,12 +114,12 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>졸업 기준 총 132학점 · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정. 자료 출처: 2026 교과과정책자(안). 실제 수강신청·졸업 처리 전 학과 공지를 꼭 확인하세요. <span class="ver">v10</span></p>
+      <p>졸업 기준 총 132학점 · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정. 자료 출처: 2026 교과과정책자(안). 실제 수강신청·졸업 처리 전 학과 공지를 꼭 확인하세요. <span class="ver">v11</span></p>
     </div>
   </footer>
 
-  <script src="firebase-config.js?v=10"></script>
-  <script src="app.js?v=10"></script>
-  <script type="module" src="auth.js?v=10"></script>
+  <script src="firebase-config.js?v=11"></script>
+  <script src="app.js?v=11"></script>
+  <script type="module" src="auth.js?v=11"></script>
 </body>
 </html>

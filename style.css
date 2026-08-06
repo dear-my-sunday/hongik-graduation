@@ -361,3 +361,52 @@ main { padding: 26px 0 60px; }
   .dash-header { flex-direction: column; align-items: flex-start; }
   .dash-right { width: 100%; justify-content: space-between; }
 }
+
+/* ===== v11 개편 오버라이드 ===== */
+
+/* item 8: 헤더 ↔ 대시보드 사이 마진 */
+main { padding-top: 40px; }
+
+/* item 2: 대시보드 / 로드맵 구분선 */
+.dash-divider { height: 1px; background: var(--line); margin: 6px 0 30px; }
+.roadmap-section .add-wrap { margin-top: 16px; margin-bottom: 0; }
+
+/* item 5: 3열 피커 (카테고리 / 하위 / 과목) */
+.picker2 { height: 260px; }
+.picker2[data-cols="2"] { grid-template-columns: 150px 1fr; }
+.picker2[data-cols="3"] { grid-template-columns: 140px 150px 1fr; }
+.pk-subs {
+  border-right: 1px solid var(--line); overflow-y: auto; background: #fafafa;
+  padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+
+/* item 3: 단계 라벨 + 목적지 */
+.ap-step { font-size: 13px; font-weight: 700; color: var(--ink); margin: 16px 0 8px; }
+.ap-head + .ap-step { margin-top: 2px; }
+.ap-dest { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.sel-name {
+  font-size: 13.5px; color: var(--muted); padding: 9px 11px;
+  background: var(--soft); border-radius: 8px; margin-bottom: 12px;
+}
+.sel-name.has { color: var(--ink); font-weight: 700; }
+
+/* 과목 열 하단 직접 입력 */
+.pk-manual { padding: 8px; border-top: 1px dashed var(--line); margin-top: 4px; }
+.pk-manual input {
+  width: 100%; border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 10px; font-size: 13.5px;
+}
+.pk-manual input:focus { outline: none; border-color: var(--accent); }
+
+/* item 7: 기타 졸업요건 = 라디오(체크 표시) */
+.go-mark {
+  width: 20px; height: 20px; min-width: 20px; border-radius: 50%;
+  border: 1.5px solid var(--line); background: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #fff; line-height: 1;
+}
+.grad-opt.active .go-mark { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+@media (max-width: 640px) {
+  .picker2[data-cols="3"] { grid-template-columns: 110px 120px 1fr; }
+}

@@ -5,11 +5,13 @@ const TOTAL = 132;
 const CYBER_LIMIT = 24;
 const SEMS = ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
 const GRAD_OPTIONS = ["졸업논문", "전공성적확인서", "공인어학성적표"];
+const GE_AREAS = ["언어와 철학", "예술과 디자인", "과학과 컴퓨터", "사회와 경제", "법과 생활", "역사와 문화", "제2외국어와 한문"];
+const SW_MODULES = ["SW소양모듈", "SW기초모듈", "SW상위모듈"];
 
 const GROUPS = [
   {
     key: "major", title: "전공", place: "full", type: "credits", target: 50,
-    note: "전공필수 + 전공선택 = 50학점 (전공필수는 전부 이수)",
+    note: "전공필수 + 전공선택 = 50학점 (전공필수는 전부 이수 · 4년간 5과목 15학점)",
     subs: [
       { area: "전공필수", label: "전공필수", req: 15, mode: "credits", desc: "반드시 듣는 전공 과목" },
       { area: "전공선택", label: "전공선택", req: 35, mode: "credits", desc: "골라 듣는 전공 과목" },
@@ -26,7 +28,7 @@ const GROUPS = [
   },
   {
     key: "sw", title: "SW·데이터활용역량인증", place: "L", type: "complete", need: 3,
-    note: "3개 모듈을 각각 이수 (총 9학점) · 매 학기 인증과목은 공지 확인",
+    note: "소양·기초·상위 모듈 각 1과목씩 총 9학점 (상위모듈 이수 시 하위모듈 인정)",
     subs: [
       { area: "SW소양모듈", label: "소양모듈", need: 1, mode: "complete" },
       { area: "SW기초모듈", label: "기초모듈", need: 1, mode: "complete" },
@@ -64,8 +66,6 @@ const GROUPS = [
 ];
 
 const AREAS = GROUPS.filter((g) => g.subs).flatMap((g) => g.subs.map((s) => s.area));
-const AREA_GROUPS = GROUPS.filter((g) => g.subs).map((g) => ({ label: g.title, areas: g.subs.map((s) => s.area) }));
-const GE_AREAS = ["언어와 철학", "예술과 디자인", "과학과 컴퓨터", "사회와 경제", "법과 생활", "역사와 문화", "제2외국어와 한문"];
 const AREA_TAG = {
   전공필수: "전필", 전공선택: "전선", 전공기초: "전기",
   교양필수: "교필", 특성화교양: "특교",
@@ -74,18 +74,27 @@ const AREA_TAG = {
 };
 GE_AREAS.forEach((a) => (AREA_TAG[a] = "공교"));
 
-const CAT_ORDER = ["전공필수", "전공선택", "전공기초", "교양필수", "특성화교양", "공통교양", "자유선택"];
-function catOf(area) { return GE_AREAS.includes(area) ? "공통교양" : area; }
+// 과목 선택기 대분류(=영역/목적지). 공통교양·SW는 하위로 한 단계 더 나뉨.
+const CAT_ORDER = ["전공필수", "전공선택", "전공기초", "교양필수", "특성화교양", "SW·데이터활용", "공통교양", "자유선택"];
+const DRILL = { "공통교양": GE_AREAS, "SW·데이터활용": SW_MODULES };
+function catOf(area) {
+  if (GE_AREAS.includes(area)) return "공통교양";
+  if (SW_MODULES.includes(area)) return "SW·데이터활용";
+  return area;
+}
 
 const k = (name, area, credits, semester, cyber = false) => ({ name, area, credits, semester, cyber });
 const CATALOG = [
+  // 전공필수
   k("경제학원론", "전공필수", 3, "1-1"),
   k("디자인론", "전공필수", 3, "1-1"),
   k("기업과경영", "전공필수", 3, "1-2"),
   k("인간공학", "전공필수", 3, "2-1"),
   k("기업법", "전공필수", 3, "3-2"),
+  // 전공기초
   k("전공기초영어Ⅰ", "전공기초", 2, "1-2"),
   k("전공기초영어Ⅱ", "전공기초", 2, "1-2"),
+  // 전공선택
   k("회계원리", "전공선택", 3, "1-1"),
   k("공연예술사", "전공선택", 3, "1-1"),
   k("디자인프로세스", "전공선택", 3, "1-2"),
@@ -126,25 +135,74 @@ const CATALOG = [
   k("물류경영", "전공선택", 3, "4-2"),
   k("비즈니스디자인현장실습", "전공선택", 3, "4-2"),
   k("박물관학과미술경영", "전공선택", 3, "4-2"),
+  // 교양필수
   k("대학영어", "교양필수", 3, "1-1"),
   k("논리적사고와글쓰기(경영)", "교양필수", 3, "1-1"),
+  // 특성화교양 (사이버강좌 · 택1)
   k("컴퓨팅사고", "특성화교양", 3, null, true),
   k("디자인씽킹", "특성화교양", 3, null, true),
   k("창업과실용법률", "특성화교양", 3, null, true),
-  k("교양중국어(1)", "제2외국어와 한문", 3, "1-1"),
+  // SW·데이터활용 — 소양모듈
+  k("컴퓨팅사고", "SW소양모듈", 3, null, true),
+  k("컴퓨터소프트웨어개론", "SW소양모듈", 3, null),
+  k("체험인공지능", "SW소양모듈", 3, null),
+  // SW·데이터활용 — 기초모듈
+  k("컴퓨터활용기초", "SW기초모듈", 3, null),
+  k("컴퓨터SW기초", "SW기초모듈", 3, null),
+  k("빅데이터의이해", "SW기초모듈", 3, null),
+  k("컴퓨터응용통계", "SW기초모듈", 3, null),
+  k("컴퓨터정보통신공학개론", "SW기초모듈", 3, null),
+  k("인터페이스디자인입문", "SW기초모듈", 3, null),
+  k("데이터분석의이해", "SW기초모듈", 3, null),
+  // SW·데이터활용 — 상위(심화)모듈
+  k("파이썬프로그래밍(입문)", "SW상위모듈", 3, null),
+  k("파이썬프로그래밍(응용)", "SW상위모듈", 3, null),
+  k("파이썬프로그래밍", "SW상위모듈", 3, null),
+  k("언어와빅데이터", "SW상위모듈", 3, null),
+  k("통계와코딩", "SW상위모듈", 3, null),
+  k("데이터시각화와스토리텔링", "SW상위모듈", 3, null),
+  k("C-프로그래밍", "SW상위모듈", 3, null),
+  k("문제해결과SW프로그래밍", "SW상위모듈", 3, null),
+  k("객체지향프로그래밍", "SW상위모듈", 3, null),
+  k("MATLAB프로그래밍및실습", "SW상위모듈", 3, null),
+  k("웹프로그래밍", "SW상위모듈", 3, null),
+  // 공통교양 — 언어와 철학
   k("문학과창의적사고", "언어와 철학", 3, "3-1"),
-  k("예술과법", "법과 생활", 3, "3-2"),
   k("언어의이해 (사이버)", "언어와 철학", 3, null, true),
+  k("인간과사상", "언어와 철학", 3, null),
+  k("명작읽기", "언어와 철학", 3, null),
+  // 공통교양 — 예술과 디자인
   k("이미지와상상력 (사이버)", "예술과 디자인", 3, null, true),
+  k("예술의이해", "예술과 디자인", 3, null),
+  k("영화의이해", "예술과 디자인", 3, null),
+  // 공통교양 — 과학과 컴퓨터
   k("사운드와컴퓨터음악 (사이버)", "과학과 컴퓨터", 3, null, true),
+  k("과학기술과사회", "과학과 컴퓨터", 3, null),
+  k("자연과학의이해", "과학과 컴퓨터", 3, null),
+  // 공통교양 — 사회와 경제
   k("인간심리의이해 (사이버)", "사회와 경제", 3, null, true),
+  k("경제학의이해", "사회와 경제", 3, null),
+  k("사회학의이해", "사회와 경제", 3, null),
+  // 공통교양 — 법과 생활
+  k("예술과법", "법과 생활", 3, "3-2"),
+  k("생활법률", "법과 생활", 3, null),
+  k("인권과헌법", "법과 생활", 3, null),
+  // 공통교양 — 역사와 문화
+  k("한국사의이해", "역사와 문화", 3, null),
+  k("서양문화사", "역사와 문화", 3, null),
+  k("세계문화의이해", "역사와 문화", 3, null),
+  // 공통교양 — 제2외국어와 한문
+  k("교양중국어(1)", "제2외국어와 한문", 3, "1-1"),
+  k("교양일본어(1)", "제2외국어와 한문", 3, null),
+  k("교양프랑스어(1)", "제2외국어와 한문", 3, null),
+  k("한문의이해", "제2외국어와 한문", 3, null),
 ];
 
 const saved = readSaved();
 let courses = Array.isArray(saved.courses) ? saved.courses.filter(isValidCourse) : [];
 let gradReq = GRAD_OPTIONS.includes(saved.gradReq) ? saved.gradReq : null;
-let form = { semester: "1-1", area: "전공필수", credits: "3", name: "" };
-let pickCat = "전공필수", pickSub = null, pickMode = "cats";
+let form = { semester: "1-1", credits: "3", area: "전공필수", name: "" };
+let pickCat = "전공필수", pickSub = null;
 
 // --- 저장/불러오기 ---
 function readSaved() {
@@ -229,8 +287,8 @@ function gradGroupHtml(g) {
   const done = !!gradReq;
   const opts = g.options
     .map((o) => `
-      <button class="grad-opt ${gradReq === o ? "active" : ""}" data-grad="${escapeAttr(o)}">
-        <span class="go-mark">${gradReq === o ? "●" : "○"}</span>
+      <button class="grad-opt ${gradReq === o ? "active" : ""}" data-grad="${escapeAttr(o)}" role="radio" aria-checked="${gradReq === o}">
+        <span class="go-mark">${gradReq === o ? "✓" : ""}</span>
         <span class="go-body"><span class="go-name">${escapeHtml(o)}</span><span class="go-hint">${escapeHtml(g.hints[o])}</span></span>
       </button>`)
     .join("");
@@ -240,7 +298,7 @@ function gradGroupHtml(g) {
         <div><h2>${escapeHtml(g.title)}</h2><p class="group-note">${escapeHtml(g.note)}</p></div>
         <span class="group-sum ${done ? "ok" : ""}">${done ? "충족" : "미선택"}</span>
       </div>
-      <div class="grad-opts">${opts}</div>
+      <div class="grad-opts" role="radiogroup">${opts}</div>
     </section>`;
 }
 
@@ -323,102 +381,123 @@ function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "
 function initForm() {
   const semSel = document.getElementById("fSemester");
   semSel.innerHTML = SEMS.map((s) => `<option value="${s}">${semLabel(s)}</option>`).join("");
-  const areaSel = document.getElementById("fArea");
-  areaSel.innerHTML = AREA_GROUPS.map(
-    (g) => `<optgroup label="${escapeAttr(g.label)}">${g.areas.map((a) => `<option value="${escapeAttr(a)}">${escapeHtml(a)}</option>`).join("")}</optgroup>`
-  ).join("");
-
   syncFormToUI();
+
   semSel.addEventListener("change", (e) => (form.semester = e.target.value));
-  areaSel.addEventListener("change", (e) => (form.area = e.target.value));
   document.getElementById("fCredits").addEventListener("change", (e) => (form.credits = e.target.value));
 
   document.getElementById("pkCats").addEventListener("click", onCatClick);
-  document.getElementById("pkCourses").addEventListener("click", (e) => {
-    const b = e.target.closest(".pk-course"); if (!b) return;
-    pickCourse(b.dataset.name);
-  });
+  document.getElementById("pkSubs").addEventListener("click", onSubClick);
+  document.getElementById("pkCourses").addEventListener("click", onCourseClick);
 
   document.getElementById("addToggle").addEventListener("click", togglePanel);
   document.getElementById("apClose").addEventListener("click", closePanel);
   document.getElementById("apCancel").addEventListener("click", closePanel);
   document.getElementById("apReset").addEventListener("click", resetForm);
   document.getElementById("addBtn").addEventListener("click", addCourse);
-  // 바깥 클릭 닫기: mousedown 사용 (리렌더로 대상이 분리되기 전에 판정)
   document.addEventListener("mousedown", (e) => { if (!e.target.closest(".add-wrap")) closePanel(); });
 
-  renderCats();
-  renderCourses();
+  refreshPicker();
 }
 
 function syncFormToUI() {
   document.getElementById("fSemester").value = form.semester;
-  document.getElementById("fArea").value = form.area;
   document.getElementById("fCredits").value = form.credits;
 }
 
 function catCount(cat) { return CATALOG.filter((c) => catOf(c.area) === cat).length; }
-function geCount(area) { return CATALOG.filter((c) => c.area === area).length; }
+function areaCount(area) { return CATALOG.filter((c) => c.area === area).length; }
+function currentArea() { return DRILL[pickCat] ? pickSub : pickCat; }
 
 function onCatClick(e) {
   const b = e.target.closest(".pk-cat"); if (!b) return;
-  if (b.dataset.back) { pickMode = "cats"; pickSub = null; renderCats(); renderCourses(); return; }
-  if (b.dataset.sub) { pickSub = b.dataset.sub; renderCats(); renderCourses(); return; }
-  const cat = b.dataset.cat;
-  if (cat === "공통교양") { pickMode = "ge"; pickSub = GE_AREAS[0]; renderCats(); renderCourses(); return; }
-  pickCat = cat; pickMode = "cats"; renderCats(); renderCourses();
+  pickCat = b.dataset.cat;
+  pickSub = DRILL[pickCat] ? DRILL[pickCat][0] : null;
+  form.name = "";
+  refreshPicker(); updateSel();
+}
+function onSubClick(e) {
+  const b = e.target.closest(".pk-cat"); if (!b) return;
+  pickSub = b.dataset.sub;
+  form.name = "";
+  refreshPicker(); updateSel();
+}
+function onCourseClick(e) {
+  const b = e.target.closest(".pk-course"); if (!b) return;
+  pickCourse(b.dataset.name);
+}
+
+function refreshPicker() {
+  const drill = DRILL[pickCat];
+  document.getElementById("picker2").dataset.cols = drill ? "3" : "2";
+  document.getElementById("pkSubs").hidden = !drill;
+  renderCats(); renderSubs(); renderCourses();
 }
 
 function renderCats() {
-  const box = document.getElementById("pkCats");
-  if (pickMode === "ge") {
-    box.innerHTML =
-      `<button class="pk-cat pk-back" data-back="1">← 뒤로</button>` +
-      GE_AREAS.map((a) => `<button class="pk-cat ${a === pickSub ? "active" : ""}" data-sub="${escapeAttr(a)}">${escapeHtml(a)}<span>${geCount(a)}</span></button>`).join("");
-    return;
-  }
-  const cats = CAT_ORDER.filter((c) => catCount(c) > 0);
-  box.innerHTML =
-    cats.map((c) => `<button class="pk-cat ${c === pickCat && pickMode === "cats" ? "active" : ""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}<span>${catCount(c)}</span></button>`).join("") +
-    `<button class="pk-cat ${pickCat === "__manual" ? "active" : ""}" data-cat="__manual">✎ 직접 입력</button>`;
+  document.getElementById("pkCats").innerHTML = CAT_ORDER
+    .map((c) => `<button class="pk-cat ${c === pickCat ? "active" : ""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}<span>${catCount(c)}</span></button>`)
+    .join("");
 }
-
+function renderSubs() {
+  const subs = DRILL[pickCat];
+  if (!subs) return;
+  document.getElementById("pkSubs").innerHTML = subs
+    .map((a) => `<button class="pk-cat ${a === pickSub ? "active" : ""}" data-sub="${escapeAttr(a)}">${escapeHtml(a)}<span>${areaCount(a)}</span></button>`)
+    .join("");
+}
 function renderCourses() {
-  const box = document.getElementById("pkCourses");
-  if (pickCat === "__manual" && pickMode === "cats") {
-    box.innerHTML = `<div class="pk-manual">
-        <input id="manualName" placeholder="과목명 직접 입력" value="${escapeAttr(form.name || "")}" autocomplete="off" />
-        <p>목록에 없는 과목(타 전공 등)은 여기에 입력하고, 위에서 학기·학점·영역을 골라 추가하세요.</p>
-      </div>`;
-    const mi = document.getElementById("manualName");
-    mi.addEventListener("input", (e) => (form.name = e.target.value));
-    mi.focus();
-    return;
-  }
-  const list = pickMode === "ge"
-    ? CATALOG.filter((c) => c.area === pickSub)
-    : CATALOG.filter((c) => catOf(c.area) === pickCat);
-  box.innerHTML = list.length
-    ? list.map((c) => {
-        const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
-        return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
-            <span class="pc-name">${escapeHtml(c.name)}${c.cyber ? " 💻" : ""}</span>
-            <span class="pc-meta">${escapeHtml(meta)}</span>
-          </button>`;
-      }).join("")
-    : `<div class="pk-manual"><p>이 분류에 등록된 과목이 없어요. ‘직접 입력’을 이용하세요.</p></div>`;
+  const area = currentArea();
+  const list = area ? CATALOG.filter((c) => c.area === area) : [];
+  const rows = list
+    .map((c) => {
+      const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
+      return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
+          <span class="pc-name">${escapeHtml(c.name)}${c.cyber ? " 💻" : ""}</span>
+          <span class="pc-meta">${escapeHtml(meta)}</span>
+        </button>`;
+    })
+    .join("");
+  const manual = `
+    <div class="pk-manual">
+      <input id="manualName" placeholder="✎ 직접 입력 (목록에 없는 과목)" value="${escapeAttr(isManual() ? form.name : "")}" autocomplete="off" />
+    </div>`;
+  document.getElementById("pkCourses").innerHTML = rows + manual;
+  const mi = document.getElementById("manualName");
+  mi.addEventListener("input", (e) => {
+    form.name = e.target.value;
+    form.area = currentArea();
+    [...document.querySelectorAll(".pk-course.active")].forEach((x) => x.classList.remove("active"));
+    updateSel();
+  });
+}
+function isManual() {
+  return form.name && !CATALOG.some((c) => c.name === form.name && c.area === currentArea());
 }
 
 function pickCourse(name) {
-  const hit = CATALOG.find((c) => c.name === name);
+  const hit = CATALOG.find((c) => c.name === name && c.area === currentArea()) || CATALOG.find((c) => c.name === name);
   form.name = name;
   if (hit) {
-    document.getElementById("fArea").value = hit.area; form.area = hit.area;
-    document.getElementById("fCredits").value = String(hit.credits); form.credits = String(hit.credits);
-    if (hit.semester) { document.getElementById("fSemester").value = hit.semester; form.semester = hit.semester; }
+    form.area = hit.area;
+    form.credits = String(hit.credits);
+    document.getElementById("fCredits").value = form.credits;
+    if (hit.semester) { form.semester = hit.semester; document.getElementById("fSemester").value = hit.semester; }
   }
   renderCourses();
-  setApStatus(`선택됨 · ${name}`);
+  updateSel();
+}
+
+function updateSel() {
+  const el = document.getElementById("selName");
+  if (!el) return;
+  if (form.name) {
+    el.textContent = `${form.name}  ·  ${form.area}`;
+    el.classList.add("has");
+  } else {
+    el.textContent = "먼저 과목을 선택하세요";
+    el.classList.remove("has");
+  }
 }
 
 function openPanel() {
@@ -434,10 +513,10 @@ function closePanel() {
 function togglePanel() { document.getElementById("addPanel").hidden ? openPanel() : closePanel(); }
 
 function resetForm() {
-  form = { semester: "1-1", area: "전공필수", credits: "3", name: "" };
+  form = { semester: "1-1", credits: "3", area: "전공필수", name: "" };
   syncFormToUI();
-  pickCat = "전공필수"; pickMode = "cats"; pickSub = null;
-  renderCats(); renderCourses();
+  pickCat = "전공필수"; pickSub = null;
+  refreshPicker(); updateSel();
   setApStatus("");
 }
 function setApStatus(text) { const el = document.getElementById("apStatus"); if (el) el.textContent = text; }
@@ -445,18 +524,18 @@ function setApStatus(text) { const el = document.getElementById("apStatus"); if 
 function addCourse() {
   const name = (form.name || "").trim();
   if (!name) { setApStatus("과목을 선택하거나 직접 입력하세요"); return; }
-  const cat = CATALOG.find((c) => c.name === name);
+  const cat = CATALOG.find((c) => c.name === name && c.area === form.area);
   courses.push({
     id: "c" + Date.now() + Math.random().toString(36).slice(2, 6),
     name, area: form.area, credits: Number(form.credits) || 0, semester: form.semester,
     cyber: cat ? !!cat.cyber : false,
   });
   form.name = "";
-  persist(); renderAll(); renderCourses();
+  persist(); renderAll(); renderCourses(); updateSel();
   setApStatus(`추가됨 · ${name}`);
 }
 
-// --- 클릭: 삭제 / 기타졸업요건 선택 ---
+// --- 클릭: 삭제 / 기타졸업요건 ---
 document.addEventListener("click", (e) => {
   const del = e.target.closest("[data-del]");
   if (del) { courses = courses.filter((c) => c.id !== del.dataset.del); persist(); renderAll(); return; }
