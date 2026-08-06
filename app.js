@@ -28,7 +28,7 @@ const GROUPS = [
   },
   {
     key: "sw", title: "SW·데이터활용역량인증", place: "L", type: "complete", need: 3,
-    note: "소양·기초·상위 모듈 각 1과목씩 총 9학점 (상위모듈 이수 시 하위모듈 인정)",
+    note: "소양·기초·상위 모듈 각 1과목씩 총 9학점 · 상위(심화)모듈을 들으면 하위모듈도 인정돼요 (예: 심화모듈만 3과목 들어도 인증 취득)",
     subs: [
       { area: "SW소양모듈", label: "소양모듈", need: 1, mode: "complete" },
       { area: "SW기초모듈", label: "기초모듈", need: 1, mode: "complete" },
@@ -45,12 +45,12 @@ const GROUPS = [
       { area: "사회와 경제", label: "사회와 경제", need: 1, mode: "complete" },
       { area: "법과 생활", label: "법과 생활", need: 1, mode: "complete" },
       { area: "역사와 문화", label: "역사와 문화", need: 1, mode: "complete" },
-      { area: "제2외국어와 한문", label: "제2외국어와 한문", need: 2, mode: "complete", required: true },
+      { area: "제2외국어와 한문", label: "제2외국어와 한문", need: 1, mode: "complete", required: true },
     ],
   },
   {
     key: "free", title: "자유선택", place: "full", type: "credits", target: 44,
-    note: "위 영역에 안 들어가는 나머지 과목 (총 132학점 맞추기) · ‘직접 입력’으로 추가",
+    note: "위 영역에 미포함되는 자율적 선택 과목",
     subs: [{ area: "자유선택", label: "자유선택", req: 44, mode: "credits", desc: "나머지 과목" }],
   },
   {
@@ -168,19 +168,19 @@ const CATALOG = [
   k("웹프로그래밍", "SW상위모듈", 3, null),
   // 공통교양 — 언어와 철학
   k("문학과창의적사고", "언어와 철학", 3, "3-1"),
-  k("언어의이해 (사이버)", "언어와 철학", 3, null, true),
+  k("언어의이해", "언어와 철학", 3, null, true),
   k("인간과사상", "언어와 철학", 3, null),
   k("명작읽기", "언어와 철학", 3, null),
   // 공통교양 — 예술과 디자인
-  k("이미지와상상력 (사이버)", "예술과 디자인", 3, null, true),
+  k("이미지와상상력", "예술과 디자인", 3, null, true),
   k("예술의이해", "예술과 디자인", 3, null),
   k("영화의이해", "예술과 디자인", 3, null),
   // 공통교양 — 과학과 컴퓨터
-  k("사운드와컴퓨터음악 (사이버)", "과학과 컴퓨터", 3, null, true),
+  k("사운드와컴퓨터음악", "과학과 컴퓨터", 3, null, true),
   k("과학기술과사회", "과학과 컴퓨터", 3, null),
   k("자연과학의이해", "과학과 컴퓨터", 3, null),
   // 공통교양 — 사회와 경제
-  k("인간심리의이해 (사이버)", "사회와 경제", 3, null, true),
+  k("인간심리의이해", "사회와 경제", 3, null, true),
   k("경제학의이해", "사회와 경제", 3, null),
   k("사회학의이해", "사회와 경제", 3, null),
   // 공통교양 — 법과 생활
@@ -358,7 +358,7 @@ function renderRoadmap() {
       ? list.map((c) => `
         <div class="chip-course">
           <span class="c-tag">${AREA_TAG[c.area] || ""}</span>
-          <span class="c-name" title="${escapeAttr(c.name)}">${escapeHtml(c.name)}</span>
+          <span class="c-name" title="${escapeAttr(c.name)}">${escapeHtml(c.name)}${cyberTag(c.cyber)}</span>
           <span class="c-credit">${c.credits}</span>
           <button class="c-del" data-del="${c.id}" title="삭제">×</button>
         </div>`).join("")
@@ -374,6 +374,7 @@ function renderRoadmap() {
 
 function renderAll() { renderHeader(); renderGroups(); renderCyber(); renderRoadmap(); }
 
+function cyberTag(cyber) { return cyber ? ` <span class="cyber-tag">(사이버)</span>` : ""; }
 function escapeAttr(s) { return String(s).replace(/"/g, "&quot;"); }
 function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
@@ -453,7 +454,7 @@ function renderCourses() {
     .map((c) => {
       const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
       return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
-          <span class="pc-name">${escapeHtml(c.name)}${c.cyber ? " 💻" : ""}</span>
+          <span class="pc-name">${escapeHtml(c.name)}${cyberTag(c.cyber)}</span>
           <span class="pc-meta">${escapeHtml(meta)}</span>
         </button>`;
     })

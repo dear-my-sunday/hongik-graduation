@@ -423,3 +423,7 @@ main { padding-top: 40px; }
 .go-mark { border-width: 2px; }
 .go-mark .go-check { width: 13px; height: 13px; display: block; }
 .grad-opt.active .go-mark { color: #fff; }
+
+/* 사이버강의 표시 텍스트 */
+.cyber-tag { font-size: 11px; color: var(--muted); font-weight: 600; }
+.pk-course.active .cyber-tag { color: #dcdcdc; }

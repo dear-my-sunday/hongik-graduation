@@ -53,8 +53,23 @@ function startFirebase() {
 
   const refFor = (uid) => doc(db, "users", uid);
 
+  // 이 기기 + 계정 내용을 합침 (같은 과목은 한 번만 · 로그인 시 자동 병합)
+  function mergeStates(local, remote) {
+    const key = (c) => `${c.name}||${c.area}||${c.semester}`;
+    const seen = new Set();
+    const courses = [];
+    for (const c of [...((remote && remote.courses) || []), ...((local && local.courses) || [])]) {
+      const kk = key(c);
+      if (seen.has(kk)) continue;
+      seen.add(kk);
+      courses.push(c);
+    }
+    const gradReq = (remote && remote.gradReq) || (local && local.gradReq) || null;
+    return { v: 6, courses, gradReq };
+  }
+
+  if (saveBar) saveBar.style.display = "none"; // 동기화 섹션 제거 (자동 저장이라 불필요)
   renderLoggedOut();
-  renderSaveBar();
 
   // 로컬 변경 → 클라우드 자동 저장 (0.8초 디바운스)
   window.cloudSave = (state) => {
@@ -84,7 +99,6 @@ function startFirebase() {
     if (!user) {
       if (wasSignedIn && window.clearAppData) window.clearAppData(); // 로그아웃 → 화면 초기화
       renderLoggedOut();
-      renderSaveBar();
       return;
     }
 
@@ -95,37 +109,14 @@ function startFirebase() {
       const snap = await getDoc(ref);
       const remote = snap.exists() ? snap.data().data : null;
       const local = window.getAppData();
-      const localHas = local && local.courses && local.courses.length > 0;
-
-      if (remote && Array.isArray(remote.courses)) {
-        // 계정에 저장된 내용이 있음
-        if (localHas && JSON.stringify(remote) !== JSON.stringify(local)) {
-          const useCloud = confirm(
-            "계정에 저장된 내용이 있어요.\n\n" +
-              "확인 = 계정에 저장된 내용으로 보기\n" +
-              "취소 = 이 기기에서 방금 작업한 내용 유지 (아래 ‘지금 저장’으로 계정에 저장 가능)"
-          );
-          if (useCloud) {
-            lastRemote = JSON.stringify(remote);
-            window.setAppData(remote);
-          } else {
-            // 로컬 유지 → 자동으로 클라우드에 반영하지 않고, 사용자가 저장 버튼 누를 때 반영
-            lastRemote = null;
-          }
-        } else {
-          lastRemote = JSON.stringify(remote);
-          window.setAppData(remote);
-        }
-      } else {
-        // 계정이 비어 있으면 이 기기 내용을 올림
-        await pushToCloud(local);
-      }
+      // 이 기기 내용과 계정 내용을 합쳐서 보여주고, 합친 걸 계정에도 저장
+      const merged = mergeStates(local, remote);
+      lastRemote = JSON.stringify(merged);
+      window.setAppData(merged);
+      await pushToCloud(merged);
     } catch (e) {
-      console.error("동기화 불러오기 실패", e);
+      console.error("동기화 실패", e);
     }
-
-    renderSaveBar();
-    setStatus("동기화됨");
 
     // 다른 기기에서 바뀌면 실시간 반영
     unsub = onSnapshot(ref, (snap) => {
@@ -154,29 +145,6 @@ function startFirebase() {
       <span class="auth-user">${photo}<span>${esc(name)}</span></span>
       <button class="auth-btn" id="logoutBtn">로그아웃</button>`;
     document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
-  }
-
-  function renderSaveBar() {
-    if (!saveBar) return;
-    if (currentUser) {
-      saveBar.innerHTML = `
-        <div class="save-info">
-          <b>기기 간 동기화 켜짐</b>
-          <span class="save-status" id="saveStatus">동기화됨</span>
-        </div>
-        <button class="btn accent" id="saveNowBtn">지금 저장</button>`;
-      document.getElementById("saveNowBtn").addEventListener("click", () => {
-        pushToCloud(window.getAppData());
-      });
-    } else {
-      saveBar.innerHTML = `
-        <div class="save-info">
-          <b>로그인하면 기기 간에 이어서 볼 수 있어요</b>
-          <span class="save-status">지금은 이 기기에만 저장돼요</span>
-        </div>
-        <button class="btn accent" id="loginSaveBtn">Google로 로그인하고 저장</button>`;
-      document.getElementById("loginSaveBtn").addEventListener("click", login);
-    }
   }
 
   async function login() {
