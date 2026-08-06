@@ -285,10 +285,11 @@ function renderGroup(g, earned) {
 
 function gradGroupHtml(g) {
   const done = !!gradReq;
+  const CHECK = `<svg class="go-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
   const opts = g.options
     .map((o) => `
       <button class="grad-opt ${gradReq === o ? "active" : ""}" data-grad="${escapeAttr(o)}" role="radio" aria-checked="${gradReq === o}">
-        <span class="go-mark">${gradReq === o ? "✓" : ""}</span>
+        <span class="go-mark">${gradReq === o ? CHECK : ""}</span>
         <span class="go-body"><span class="go-name">${escapeHtml(o)}</span><span class="go-hint">${escapeHtml(g.hints[o])}</span></span>
       </button>`)
     .join("");
@@ -343,10 +344,9 @@ function renderCyber() {
   bar.innerHTML = `
     <div class="cy-main">
       <span class="cy-count">🖥 사이버강의 <b>${used}</b>학점 사용</span>
-      <span class="cy-limit">최대 ${CYBER_LIMIT}학점까지만 수강 가능</span>
     </div>
     <div class="cy-track" title="${used} / ${CYBER_LIMIT}"><div class="cy-fill" style="width:${pct}%"></div></div>
-    <span class="cy-note">${over ? "⚠ 한도 초과! 24학점까지만 인정돼요" : `앞으로 ${remain}학점 더 신청 가능 (채우는 게 아니라 한도예요)`}</span>`;
+    <span class="cy-note">${over ? `⚠ 최대 ${CYBER_LIMIT}학점 초과` : `최대 ${CYBER_LIMIT}학점`}</span>`;
 }
 
 function renderRoadmap() {

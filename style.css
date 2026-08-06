@@ -410,3 +410,16 @@ main { padding-top: 40px; }
 @media (max-width: 640px) {
   .picker2[data-cols="3"] { grid-template-columns: 110px 120px 1fr; }
 }
+
+/* ===== v12 수정 ===== */
+
+/* item 2: 하위열(pk-subs)이 hidden일 때 확실히 숨김 (그리드 깨짐 방지) */
+.pk-subs[hidden] { display: none !important; }
+
+/* item 1: 헤더 ↔ 대시보드 사이 마진 (.wrap 패딩에 덮이지 않게 #groups에 직접) */
+#groups { margin-top: 30px; }
+
+/* item 3: 체크 아이콘 보더 2px + 둥근 캡(SVG) */
+.go-mark { border-width: 2px; }
+.go-mark .go-check { width: 13px; height: 13px; display: block; }
+.grad-opt.active .go-mark { color: #fff; }
