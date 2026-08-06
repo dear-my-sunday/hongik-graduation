@@ -2,10 +2,10 @@
 // 이 브라우저에 자동 저장되고, 로그인하면 기기 간 동기화됩니다.
 const STORAGE_KEY = "hd-graduate-v6";
 const TOTAL = 132;
-const CYBER_LIMIT = 24; // 사이버강의 재학 중 최대 이수 가능 학점(한도)
+const CYBER_LIMIT = 24;
 const SEMS = ["1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
+const GRAD_OPTIONS = ["졸업논문", "전공성적확인서", "공인어학성적표"];
 
-// 요건 그룹. place: full(전폭) / L(좌열) / R(우열). mode: credits / complete
 const GROUPS = [
   {
     key: "major", title: "전공", place: "full", type: "credits", target: 50,
@@ -19,7 +19,7 @@ const GROUPS = [
     key: "etc", title: "기타 지정과목", place: "L", type: "complete",
     note: "선택지가 적은 필수·지정 과목",
     subs: [
-      { area: "전공기초", label: "전공기초", req: 2, mode: "complete", hint: "전공기초영어(Ⅰ/Ⅱ 택1)" },
+      { area: "전공기초", label: "전공기초영어", req: 2, mode: "complete", hint: "Ⅰ 또는 Ⅱ 중 택1 (2학점)" },
       { area: "교양필수", label: "교양필수", need: 2, mode: "complete", hint: "대학영어 + 논리적사고와글쓰기" },
       { area: "특성화교양", label: "특성화교양", need: 1, mode: "complete", hint: "컴퓨팅사고/디자인씽킹/창업과실용법률 중 택1" },
     ],
@@ -47,14 +47,24 @@ const GROUPS = [
     ],
   },
   {
-    key: "free", title: "자유선택 · 졸업논문", place: "full", type: "credits", target: 44,
-    note: "나머지 학점 + 졸업논문 (총 132학점 맞추기)",
-    subs: [{ area: "자유선택", label: "자유선택", req: 44, mode: "credits", desc: "나머지 + 졸업논문" }],
+    key: "free", title: "자유선택", place: "full", type: "credits", target: 44,
+    note: "위 영역에 안 들어가는 나머지 과목 (총 132학점 맞추기) · ‘직접 입력’으로 추가",
+    subs: [{ area: "자유선택", label: "자유선택", req: 44, mode: "credits", desc: "나머지 과목" }],
+  },
+  {
+    key: "grad", title: "기타 졸업요건", place: "full", type: "grad",
+    note: "졸업논문 요건은 아래 중 하나로 충족돼요 (택1)",
+    options: GRAD_OPTIONS,
+    hints: {
+      졸업논문: "논문 제출·심사 통과 (표절률 15% 미만)",
+      전공성적확인서: "전공 50학점 · 평점평균 3.0 이상",
+      공인어학성적표: "TOEIC 700 / TOEFL(IBT) 76 등",
+    },
   },
 ];
 
-const AREAS = GROUPS.flatMap((g) => g.subs.map((s) => s.area));
-const AREA_GROUPS = GROUPS.map((g) => ({ label: g.title, areas: g.subs.map((s) => s.area) }));
+const AREAS = GROUPS.filter((g) => g.subs).flatMap((g) => g.subs.map((s) => s.area));
+const AREA_GROUPS = GROUPS.filter((g) => g.subs).map((g) => ({ label: g.title, areas: g.subs.map((s) => s.area) }));
 const GE_AREAS = ["언어와 철학", "예술과 디자인", "과학과 컴퓨터", "사회와 경제", "법과 생활", "역사와 문화", "제2외국어와 한문"];
 const AREA_TAG = {
   전공필수: "전필", 전공선택: "전선", 전공기초: "전기",
@@ -64,11 +74,9 @@ const AREA_TAG = {
 };
 GE_AREAS.forEach((a) => (AREA_TAG[a] = "공교"));
 
-// 과목 선택기의 좌측 대분류 (시간표 이수구분 기준). 서울캠 공통교양·일반교양·디자인경영융합학부만.
 const CAT_ORDER = ["전공필수", "전공선택", "전공기초", "교양필수", "특성화교양", "공통교양", "자유선택"];
 function catOf(area) { return GE_AREAS.includes(area) ? "공통교양" : area; }
 
-// 실제 교과과정 과목. k(과목명, 영역, 학점, 학기|null, 사이버여부)
 const k = (name, area, credits, semester, cyber = false) => ({ name, area, credits, semester, cyber });
 const CATALOG = [
   k("경제학원론", "전공필수", 3, "1-1"),
@@ -76,7 +84,8 @@ const CATALOG = [
   k("기업과경영", "전공필수", 3, "1-2"),
   k("인간공학", "전공필수", 3, "2-1"),
   k("기업법", "전공필수", 3, "3-2"),
-  k("전공기초영어(Ⅰ/Ⅱ 택1)", "전공기초", 2, "1-2"),
+  k("전공기초영어Ⅰ", "전공기초", 2, "1-2"),
+  k("전공기초영어Ⅱ", "전공기초", 2, "1-2"),
   k("회계원리", "전공선택", 3, "1-1"),
   k("공연예술사", "전공선택", 3, "1-1"),
   k("디자인프로세스", "전공선택", 3, "1-2"),
@@ -129,36 +138,31 @@ const CATALOG = [
   k("이미지와상상력 (사이버)", "예술과 디자인", 3, null, true),
   k("사운드와컴퓨터음악 (사이버)", "과학과 컴퓨터", 3, null, true),
   k("인간심리의이해 (사이버)", "사회와 경제", 3, null, true),
-  k("졸업논문", "자유선택", 3, null),
 ];
 
-let courses = load();
+const saved = readSaved();
+let courses = Array.isArray(saved.courses) ? saved.courses.filter(isValidCourse) : [];
+let gradReq = GRAD_OPTIONS.includes(saved.gradReq) ? saved.gradReq : null;
 let form = { semester: "1-1", area: "전공필수", credits: "3", name: "" };
-let pickCat = "전공필수";
+let pickCat = "전공필수", pickSub = null, pickMode = "cats";
 
 // --- 저장/불러오기 ---
-function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const obj = raw ? JSON.parse(raw) : null;
-    if (obj && Array.isArray(obj.courses)) return obj.courses.filter(isValidCourse);
-  } catch {}
-  return [];
+function readSaved() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
 }
 function isValidCourse(c) {
   return c && typeof c.name === "string" && AREAS.includes(c.area) &&
     typeof c.credits === "number" && SEMS.includes(c.semester);
 }
+function getState() { return { v: 6, courses, gradReq }; }
 function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 6, courses }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
   if (window.cloudSave) window.cloudSave(getState());
 }
-function getState() { return { v: 6, courses }; }
 
 // --- 파생 계산 ---
 function earnedByArea() {
-  const m = {};
-  AREAS.forEach((a) => (m[a] = 0));
+  const m = {}; AREAS.forEach((a) => (m[a] = 0));
   courses.forEach((c) => { if (m[c.area] !== undefined) m[c.area] += Number(c.credits) || 0; });
   return m;
 }
@@ -194,9 +198,10 @@ function renderGroups() {
     renderGroup(byKey.major, earned) +
     `<div class="mid-grid">
        <div class="mid-col">${renderGroup(byKey.etc, earned)}${renderGroup(byKey.sw, earned)}</div>
-       <div class="mid-col">${renderGroup(byKey.ge, earned)}</div>
+       <div class="mid-col mid-col-fill">${renderGroup(byKey.ge, earned)}</div>
      </div>` +
-    renderGroup(byKey.free, earned);
+    renderGroup(byKey.free, earned) +
+    gradGroupHtml(byKey.grad);
 }
 
 function renderGroup(g, earned) {
@@ -220,6 +225,25 @@ function renderGroup(g, earned) {
     </section>`;
 }
 
+function gradGroupHtml(g) {
+  const done = !!gradReq;
+  const opts = g.options
+    .map((o) => `
+      <button class="grad-opt ${gradReq === o ? "active" : ""}" data-grad="${escapeAttr(o)}">
+        <span class="go-mark">${gradReq === o ? "●" : "○"}</span>
+        <span class="go-body"><span class="go-name">${escapeHtml(o)}</span><span class="go-hint">${escapeHtml(g.hints[o])}</span></span>
+      </button>`)
+    .join("");
+  return `
+    <section class="group">
+      <div class="group-head">
+        <div><h2>${escapeHtml(g.title)}</h2><p class="group-note">${escapeHtml(g.note)}</p></div>
+        <span class="group-sum ${done ? "ok" : ""}">${done ? "충족" : "미선택"}</span>
+      </div>
+      <div class="grad-opts">${opts}</div>
+    </section>`;
+}
+
 function creditCard(sub, earned) {
   const e = earned[sub.area] || 0, req = sub.req;
   const pct = req > 0 ? Math.min(100, Math.round((e / req) * 100)) : 0;
@@ -237,15 +261,14 @@ function creditCard(sub, earned) {
 function doneRow(sub, earned) {
   const done = isSubDone(sub, earned);
   const cnt = countByArea(sub.area), e = earned[sub.area] || 0;
-  const tags = [];
-  if (sub.required) tags.push(`<span class="tag-mini req">필수</span>`);
+  const tags = sub.required ? `<span class="tag-mini req">필수</span>` : "";
   const sub2 = sub.need ? `${cnt}/${sub.need}과목` : sub.req ? `${e}/${sub.req}학점` : cnt ? `${cnt}과목` : "";
   const pill = done ? `<span class="pill done">완료</span>` : `<span class="pill todo">미이수</span>`;
   const hint = sub.hint ? `<div class="done-hint">${escapeHtml(sub.hint)}</div>` : "";
   return `
     <div class="done-row">
       <div class="done-left">
-        <div class="done-top"><span class="done-name">${escapeHtml(sub.label)}</span>${tags.join("")}${sub2 ? `<span class="done-sub">${sub2}</span>` : ""}</div>
+        <div class="done-top"><span class="done-name">${escapeHtml(sub.label)}</span>${tags}${sub2 ? `<span class="done-sub">${sub2}</span>` : ""}</div>
         ${hint}
       </div>
       ${pill}
@@ -306,15 +329,11 @@ function initForm() {
   ).join("");
 
   syncFormToUI();
-
   semSel.addEventListener("change", (e) => (form.semester = e.target.value));
   areaSel.addEventListener("change", (e) => (form.area = e.target.value));
   document.getElementById("fCredits").addEventListener("change", (e) => (form.credits = e.target.value));
 
-  document.getElementById("pkCats").addEventListener("click", (e) => {
-    const b = e.target.closest(".pk-cat"); if (!b) return;
-    pickCat = b.dataset.cat; renderCats(); renderCourses();
-  });
+  document.getElementById("pkCats").addEventListener("click", onCatClick);
   document.getElementById("pkCourses").addEventListener("click", (e) => {
     const b = e.target.closest(".pk-course"); if (!b) return;
     pickCourse(b.dataset.name);
@@ -325,7 +344,8 @@ function initForm() {
   document.getElementById("apCancel").addEventListener("click", closePanel);
   document.getElementById("apReset").addEventListener("click", resetForm);
   document.getElementById("addBtn").addEventListener("click", addCourse);
-  document.addEventListener("click", (e) => { if (!e.target.closest(".add-wrap")) closePanel(); });
+  // 바깥 클릭 닫기: mousedown 사용 (리렌더로 대상이 분리되기 전에 판정)
+  document.addEventListener("mousedown", (e) => { if (!e.target.closest(".add-wrap")) closePanel(); });
 
   renderCats();
   renderCourses();
@@ -338,17 +358,34 @@ function syncFormToUI() {
 }
 
 function catCount(cat) { return CATALOG.filter((c) => catOf(c.area) === cat).length; }
+function geCount(area) { return CATALOG.filter((c) => c.area === area).length; }
+
+function onCatClick(e) {
+  const b = e.target.closest(".pk-cat"); if (!b) return;
+  if (b.dataset.back) { pickMode = "cats"; pickSub = null; renderCats(); renderCourses(); return; }
+  if (b.dataset.sub) { pickSub = b.dataset.sub; renderCats(); renderCourses(); return; }
+  const cat = b.dataset.cat;
+  if (cat === "공통교양") { pickMode = "ge"; pickSub = GE_AREAS[0]; renderCats(); renderCourses(); return; }
+  pickCat = cat; pickMode = "cats"; renderCats(); renderCourses();
+}
 
 function renderCats() {
+  const box = document.getElementById("pkCats");
+  if (pickMode === "ge") {
+    box.innerHTML =
+      `<button class="pk-cat pk-back" data-back="1">← 뒤로</button>` +
+      GE_AREAS.map((a) => `<button class="pk-cat ${a === pickSub ? "active" : ""}" data-sub="${escapeAttr(a)}">${escapeHtml(a)}<span>${geCount(a)}</span></button>`).join("");
+    return;
+  }
   const cats = CAT_ORDER.filter((c) => catCount(c) > 0);
-  document.getElementById("pkCats").innerHTML =
-    cats.map((c) => `<button class="pk-cat ${c === pickCat ? "active" : ""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}<span>${catCount(c)}</span></button>`).join("") +
+  box.innerHTML =
+    cats.map((c) => `<button class="pk-cat ${c === pickCat && pickMode === "cats" ? "active" : ""}" data-cat="${escapeAttr(c)}">${escapeHtml(c)}<span>${catCount(c)}</span></button>`).join("") +
     `<button class="pk-cat ${pickCat === "__manual" ? "active" : ""}" data-cat="__manual">✎ 직접 입력</button>`;
 }
 
 function renderCourses() {
   const box = document.getElementById("pkCourses");
-  if (pickCat === "__manual") {
+  if (pickCat === "__manual" && pickMode === "cats") {
     box.innerHTML = `<div class="pk-manual">
         <input id="manualName" placeholder="과목명 직접 입력" value="${escapeAttr(form.name || "")}" autocomplete="off" />
         <p>목록에 없는 과목(타 전공 등)은 여기에 입력하고, 위에서 학기·학점·영역을 골라 추가하세요.</p>
@@ -358,16 +395,18 @@ function renderCourses() {
     mi.focus();
     return;
   }
-  const list = CATALOG.filter((c) => catOf(c.area) === pickCat);
+  const list = pickMode === "ge"
+    ? CATALOG.filter((c) => c.area === pickSub)
+    : CATALOG.filter((c) => catOf(c.area) === pickCat);
   box.innerHTML = list.length
     ? list.map((c) => {
-        const meta = [`${c.credits}학점`, c.semester || "학기무관", pickCat === "공통교양" ? c.area : ""].filter(Boolean).join(" · ");
+        const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
         return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
             <span class="pc-name">${escapeHtml(c.name)}${c.cyber ? " 💻" : ""}</span>
             <span class="pc-meta">${escapeHtml(meta)}</span>
           </button>`;
       }).join("")
-    : `<div class="pk-manual"><p>이 분류에 등록된 과목이 없어요.</p></div>`;
+    : `<div class="pk-manual"><p>이 분류에 등록된 과목이 없어요. ‘직접 입력’을 이용하세요.</p></div>`;
 }
 
 function pickCourse(name) {
@@ -397,7 +436,7 @@ function togglePanel() { document.getElementById("addPanel").hidden ? openPanel(
 function resetForm() {
   form = { semester: "1-1", area: "전공필수", credits: "3", name: "" };
   syncFormToUI();
-  pickCat = "전공필수";
+  pickCat = "전공필수"; pickMode = "cats"; pickSub = null;
   renderCats(); renderCourses();
   setApStatus("");
 }
@@ -417,15 +456,16 @@ function addCourse() {
   setApStatus(`추가됨 · ${name}`);
 }
 
-// --- 삭제 ---
+// --- 클릭: 삭제 / 기타졸업요건 선택 ---
 document.addEventListener("click", (e) => {
   const del = e.target.closest("[data-del]");
-  if (del) { courses = courses.filter((c) => c.id !== del.dataset.del); persist(); renderAll(); }
+  if (del) { courses = courses.filter((c) => c.id !== del.dataset.del); persist(); renderAll(); return; }
+  const gd = e.target.closest("[data-grad]");
+  if (gd) { const o = gd.dataset.grad; gradReq = gradReq === o ? null : o; persist(); renderAll(); return; }
 });
 
-// --- 전체 초기화 ---
 document.getElementById("resetBtn").addEventListener("click", () => {
-  if (confirm("담은 과목을 모두 지울까요?")) { courses = []; resetForm(); persist(); renderAll(); }
+  if (confirm("담은 과목과 선택을 모두 지울까요?")) { courses = []; gradReq = null; resetForm(); persist(); renderAll(); }
 });
 
 // --- 클라우드 연동 훅 ---
@@ -433,12 +473,13 @@ window.getAppData = getState;
 window.setAppData = (incoming) => {
   if (!incoming || !Array.isArray(incoming.courses)) return;
   courses = incoming.courses.filter(isValidCourse);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 6, courses }));
+  gradReq = GRAD_OPTIONS.includes(incoming.gradReq) ? incoming.gradReq : null;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
   renderAll();
 };
 window.clearAppData = () => {
-  courses = [];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: 6, courses }));
+  courses = []; gradReq = null;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(getState()));
   renderAll();
 };
 
