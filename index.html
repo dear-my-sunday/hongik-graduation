@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>졸업요건 대시보드 · 디자인경영전공</title>
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   <!-- ① 헤더 배너 -->
@@ -50,12 +50,6 @@
           <button class="ap-close" id="apClose" aria-label="닫기">×</button>
         </div>
 
-        <label class="ap-label" for="fName">과목 검색</label>
-        <div class="combo">
-          <input id="fName" placeholder="과목명 검색 (예: 마케팅)" autocomplete="off" />
-          <div class="combo-list" id="comboList" hidden></div>
-        </div>
-
         <div class="ap-row">
           <div>
             <label class="ap-label" for="fSemester">학기</label>
@@ -73,6 +67,12 @@
 
         <label class="ap-label" for="fArea">영역</label>
         <select id="fArea" aria-label="영역"></select>
+
+        <label class="ap-label">과목 선택</label>
+        <div class="picker2">
+          <div class="pk-cats" id="pkCats"></div>
+          <div class="pk-courses" id="pkCourses"></div>
+        </div>
 
         <div class="ap-actions">
           <button id="apReset" class="ap-link">초기화</button>
@@ -110,12 +110,12 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <p>졸업 기준 총 132학점 · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정. 자료 출처: 2026 교과과정책자(안). 실제 수강신청·졸업 처리 전 학과 공지를 꼭 확인하세요. <span class="ver">v8</span></p>
+      <p>졸업 기준 총 132학점 · 전공 50학점(전공필수 전부 포함) · 교양은 최대 50학점까지만 인정. 자료 출처: 2026 교과과정책자(안). 실제 수강신청·졸업 처리 전 학과 공지를 꼭 확인하세요. <span class="ver">v9</span></p>
     </div>
   </footer>
 
-  <script src="firebase-config.js?v=8"></script>
-  <script src="app.js?v=8"></script>
-  <script type="module" src="auth.js?v=8"></script>
+  <script src="firebase-config.js?v=9"></script>
+  <script src="app.js?v=9"></script>
+  <script type="module" src="auth.js?v=9"></script>
 </body>
 </html>
