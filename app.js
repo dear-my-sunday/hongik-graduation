@@ -147,12 +147,12 @@ const CATALOG = [
   // 교양필수
   k("대학영어", "교양필수", 3, "1-1"),
   k("논리적사고와글쓰기(경영)", "교양필수", 3, "1-1"),
-  // 특성화교양 (사이버강좌 · 택1)
-  k("컴퓨팅사고", "특성화교양", 3, null, true),
-  k("디자인씽킹", "특성화교양", 3, null, true),
-  k("창업과실용법률", "특성화교양", 3, null, true),
+  // 특성화교양 (택1) — 사이버/일반 옵션은 아래에서 자동 생성
+  k("컴퓨팅사고", "특성화교양", 3, null),
+  k("디자인씽킹", "특성화교양", 3, null),
+  k("창업과실용법률", "특성화교양", 3, null),
   // SW·데이터활용 — 소양모듈
-  k("컴퓨팅사고", "SW소양모듈", 3, null, true),
+  k("컴퓨팅사고", "SW소양모듈", 3, null),
   k("컴퓨터소프트웨어개론", "SW소양모듈", 3, null),
   k("체험인공지능", "SW소양모듈", 3, null),
   // SW·데이터활용 — 기초모듈
@@ -405,6 +405,21 @@ const CATALOG = [
   g("해외어학연수(2)", "제2외국어계열", 2),
 ];
 
+// 사이버로도 개설되는 과목: (사이버) 버전을 자동 추가.
+// 일반강좌로 들으면 사이버 24학점 한도에 포함되지 않도록, 사이버/일반을 따로 담을 수 있게 함.
+const CYBER_NAMES = new Set([
+  "화학과문명", "생물학탐구", "언어의이해", "인간관계론", "매스컴과현대사회", "인간심리의이해",
+  "독일의문화와예술", "이미지와상상력", "결혼학개론", "소비자보호와법", "협상의기술",
+  "창업과실용법률", "창업과실용법률(LEGAL THINKING)", "체험인공지능",
+  "컴퓨팅사고", "컴퓨팅사고(COMP. THINKING)", "공연예술의이해", "유럽의미술과문화",
+  "미학의이해", "패션과테크놀로지", "미래세상의모빌리티", "디자인씽킹", "디자인씽킹(DESIGN THINKING)",
+]);
+for (const c of [...CATALOG]) {
+  if (!c.cyber && CYBER_NAMES.has(c.name)) {
+    CATALOG.push({ ...c, name: c.name + " (사이버)", cyber: true });
+  }
+}
+
 const saved = readSaved();
 let courses = Array.isArray(saved.courses) ? saved.courses.filter(isValidCourse) : [];
 let gradReq = GRAD_OPTIONS.includes(saved.gradReq) ? saved.gradReq : null;
@@ -565,7 +580,7 @@ function renderRoadmap() {
       ? list.map((c) => `
         <div class="chip-course">
           <span class="c-tag">${AREA_TAG[c.area] || ""}</span>
-          <span class="c-name" title="${escapeAttr(c.name)}">${escapeHtml(c.name)}${cyberTag(c.cyber)}</span>
+          <span class="c-name" title="${escapeAttr(c.name)}">${escapeHtml(c.name)}</span>
           <span class="c-credit">${c.credits}</span>
           <button class="c-del" data-del="${c.id}" title="삭제">×</button>
         </div>`).join("")
@@ -667,7 +682,7 @@ function renderCourses() {
     .map((c) => {
       const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
       return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
-          <span class="pc-name">${escapeHtml(c.name)}${cyberTag(c.cyber)}</span>
+          <span class="pc-name">${escapeHtml(c.name)}</span>
           <span class="pc-meta">${escapeHtml(meta)}</span>
         </button>`;
     })
