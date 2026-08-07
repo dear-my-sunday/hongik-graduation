@@ -73,17 +73,26 @@ const AREA_TAG = {
   자유선택: "자유",
 };
 GE_AREAS.forEach((a) => (AREA_TAG[a] = "공교"));
+const GEN_SERIES = ["인문계열", "사회계열", "자연계열", "예체능계열", "영어계열", "제2외국어계열"];
 
-// 과목 선택기 대분류(=영역/목적지). 공통교양·SW는 하위로 한 단계 더 나뉨.
-const CAT_ORDER = ["전공필수", "전공선택", "전공기초", "교양필수", "특성화교양", "SW·데이터활용", "공통교양", "자유선택"];
-const DRILL = { "공통교양": GE_AREAS, "SW·데이터활용": SW_MODULES };
-function catOf(area) {
-  if (GE_AREAS.includes(area)) return "공통교양";
-  if (SW_MODULES.includes(area)) return "SW·데이터활용";
-  return area;
+// 과목 선택기 대분류(cat) → 하위(sub). 공통교양·SW·일반교양은 한 단계 더 나뉨.
+const CAT_ORDER = ["전공필수", "전공선택", "전공기초", "교양필수", "특성화교양", "SW·데이터활용", "공통교양", "일반교양", "자유선택"];
+const DRILL_SUBS = { "공통교양": GE_AREAS, "SW·데이터활용": SW_MODULES, "일반교양": GEN_SERIES };
+function isDrill(cat) { return !!DRILL_SUBS[cat]; }
+
+// area(요건 집계용) → [cat, sub] (피커 위치)
+function catSubOf(area) {
+  if (GE_AREAS.includes(area)) return ["공통교양", area];
+  if (SW_MODULES.includes(area)) return ["SW·데이터활용", area];
+  return [area, null];
 }
-
-const k = (name, area, credits, semester, cyber = false) => ({ name, area, credits, semester, cyber });
+// 일반 과목: cat/sub는 area에서 유도
+const k = (name, area, credits, semester, cyber = false) => {
+  const [cat, sub] = catSubOf(area);
+  return { name, area, credits, semester, cyber, cat, sub };
+};
+// 일반교양: 요건은 자유선택으로 집계하되, 피커에선 [일반교양 > 계열]에 표시
+const g = (name, series, credits = 3) => ({ name, area: "자유선택", credits, semester: null, cyber: false, cat: "일반교양", sub: series });
 const CATALOG = [
   // 전공필수
   k("경제학원론", "전공필수", 3, "1-1"),
@@ -167,35 +176,233 @@ const CATALOG = [
   k("MATLAB프로그래밍및실습", "SW상위모듈", 3, null),
   k("웹프로그래밍", "SW상위모듈", 3, null),
   // 공통교양 — 언어와 철학
-  k("문학과창의적사고", "언어와 철학", 3, "3-1"),
-  k("언어의이해", "언어와 철학", 3, null, true),
-  k("인간과사상", "언어와 철학", 3, null),
-  k("명작읽기", "언어와 철학", 3, null),
+  k("현대사회와윤리", "언어와 철학", 3, null),
+  k("언어의이해", "언어와 철학", 3, null),
+  k("논리와사고", "언어와 철학", 3, null),
+  k("문학과창의적사고", "언어와 철학", 3, null),
+  k("현대인의의사소통", "언어와 철학", 3, null),
+  k("서양철학입문", "언어와 철학", 3, null),
+  k("동양철학입문", "언어와 철학", 3, null),
   // 공통교양 — 예술과 디자인
-  k("이미지와상상력", "예술과 디자인", 3, null, true),
-  k("예술의이해", "예술과 디자인", 3, null),
-  k("영화의이해", "예술과 디자인", 3, null),
+  k("미술의이해", "예술과 디자인", 3, null),
+  k("현대생활과디자인", "예술과 디자인", 3, null),
+  k("대중예술의이해", "예술과 디자인", 3, null),
+  k("조형예술과미학", "예술과 디자인", 3, null),
+  k("사진예술의이해", "예술과 디자인", 3, null),
+  k("디지털디자인입문", "예술과 디자인", 3, null),
+  k("시각과이미지", "예술과 디자인", 3, null),
   // 공통교양 — 과학과 컴퓨터
-  k("사운드와컴퓨터음악", "과학과 컴퓨터", 3, null, true),
-  k("과학기술과사회", "과학과 컴퓨터", 3, null),
-  k("자연과학의이해", "과학과 컴퓨터", 3, null),
+  k("화학과문명", "과학과 컴퓨터", 3, null),
+  k("과학사", "과학과 컴퓨터", 3, null),
+  k("물리현상의이해", "과학과 컴퓨터", 3, null),
+  k("생물학탐구", "과학과 컴퓨터", 3, null),
+  k("컴퓨터활용기초", "과학과 컴퓨터", 3, null),
+  k("컴퓨터SW기초", "과학과 컴퓨터", 3, null),
   // 공통교양 — 사회와 경제
-  k("인간심리의이해", "사회와 경제", 3, null, true),
-  k("경제학의이해", "사회와 경제", 3, null),
+  k("인간관계론", "사회와 경제", 3, null),
   k("사회학의이해", "사회와 경제", 3, null),
+  k("매스컴과현대사회", "사회와 경제", 3, null),
+  k("마케팅의이해", "사회와 경제", 3, null),
+  k("경제학입문", "사회와 경제", 3, null),
+  k("인간심리의이해", "사회와 경제", 3, null),
+  k("회계의이해", "사회와 경제", 3, null),
   // 공통교양 — 법과 생활
-  k("예술과법", "법과 생활", 3, "3-2"),
-  k("생활법률", "법과 생활", 3, null),
-  k("인권과헌법", "법과 생활", 3, null),
+  k("정보사회와저작권", "법과 생활", 3, null),
+  k("현대사회와법", "법과 생활", 3, null),
+  k("지식재산과법", "법과 생활", 3, null),
+  k("예술과법", "법과 생활", 3, null),
+  k("인권과국가", "법과 생활", 3, null),
+  k("범죄와사회", "법과 생활", 3, null),
+  k("국제관계와법", "법과 생활", 3, null),
   // 공통교양 — 역사와 문화
+  k("한국의문화유산", "역사와 문화", 3, null),
+  k("문화인류학입문", "역사와 문화", 3, null),
+  k("세계시민의식", "역사와 문화", 3, null),
+  k("동양사의이해", "역사와 문화", 3, null),
   k("한국사의이해", "역사와 문화", 3, null),
-  k("서양문화사", "역사와 문화", 3, null),
-  k("세계문화의이해", "역사와 문화", 3, null),
+  k("서양사의이해", "역사와 문화", 3, null),
+  k("글로벌사회의이해", "역사와 문화", 3, null),
   // 공통교양 — 제2외국어와 한문
-  k("교양중국어(1)", "제2외국어와 한문", 3, "1-1"),
-  k("교양일본어(1)", "제2외국어와 한문", 3, null),
+  k("교양독일어(1)", "제2외국어와 한문", 3, null),
+  k("교양독일어(2)", "제2외국어와 한문", 2, null),
   k("교양프랑스어(1)", "제2외국어와 한문", 3, null),
-  k("한문의이해", "제2외국어와 한문", 3, null),
+  k("교양프랑스어(2)", "제2외국어와 한문", 2, null),
+  k("교양일본어(1)", "제2외국어와 한문", 3, null),
+  k("교양일본어(2)", "제2외국어와 한문", 2, null),
+  k("교양중국어(1)", "제2외국어와 한문", 3, null),
+  k("교양중국어(2)", "제2외국어와 한문", 2, null),
+  k("교양한문(1)", "제2외국어와 한문", 3, null),
+  k("교양스페인어(1)", "제2외국어와 한문", 3, null),
+  k("교양스페인어(2)", "제2외국어와 한문", 2, null),
+  // 일반교양 — 인문계열
+  g("한국근현대사", "인문계열", 3),
+  g("독일의문화와예술", "인문계열", 3),
+  g("일본의문화와예술", "인문계열", 3),
+  g("스페인,중남미의문화와예술", "인문계열", 3),
+  g("이미지와상상력", "인문계열", 3),
+  g("서양고전의이해", "인문계열", 3),
+  g("연극의이해", "인문계열", 3),
+  g("르네상스의문화와예술", "인문계열", 3),
+  g("문학과영화", "인문계열", 3),
+  g("글읽기의방법론", "인문계열", 3),
+  g("한국문화의이해", "인문계열", 3),
+  g("작문의기초와실제", "인문계열", 3),
+  g("발표와토론", "인문계열", 3),
+  g("현대예술과미학", "인문계열", 3),
+  g("이태리사회와문화", "인문계열", 2),
+  g("학술적 글읽기와 토론", "인문계열", 3),
+  g("학술적 글쓰기와 발표", "인문계열", 3),
+  g("한류와엔터테인먼트산업", "인문계열", 3),
+  g("언어와빅데이터", "인문계열", 3),
+  g("소리와HCI", "인문계열", 3),
+  g("신화로배우는문화콘텐츠", "인문계열", 3),
+  g("프랑스문화예술의멀티유니버스", "인문계열", 3),
+  g("대학실용한국어", "인문계열", 3),
+  g("잠언으로배우는삶", "인문계열", 3),
+  g("긍정심리워크숍", "인문계열", 3),
+  g("AI와함께하는인문학명저탐색", "인문계열", 3),
+  g("아동미술심리상담의이해", "인문계열", 3),
+  g("문학으로읽는사랑의윤리", "인문계열", 3),
+  g("<인문명저읽기>-개인의삶과사회", "인문계열", 3),
+  // 일반교양 — 사회계열
+  g("보험과현대생활", "사회계열", 3),
+  g("결혼학개론", "사회계열", 3),
+  g("자기이해와진로탐색", "사회계열", 2),
+  g("직업과취업", "사회계열", 2),
+  g("소비자보호와법", "사회계열", 3),
+  g("광고의이해", "사회계열", 3),
+  g("조직과리더쉽", "사회계열", 3),
+  g("생활과세무", "사회계열", 3),
+  g("영화를통한법의이해", "사회계열", 3),
+  g("문화콘텐츠와창의성", "사회계열", 3),
+  g("협상의기술", "사회계열", 3),
+  g("현대사회의이해", "사회계열", 3),
+  g("전공탐색", "사회계열", 2),
+  g("창업과경영", "사회계열", 2),
+  g("대학생을위한실용금융", "사회계열", 3),
+  g("직무이해와취업역량개발", "사회계열", 2),
+  g("지속가능경제,사회,경영", "사회계열", 3),
+  g("통계와코딩", "사회계열", 3),
+  g("데이터시각화와스토리텔링", "사회계열", 3),
+  g("홍익서비스러닝", "사회계열", 1),
+  g("민법의이해(2)", "사회계열", 3),
+  g("갈등관리와해결", "사회계열", 3),
+  g("기술혁신과사회과학", "사회계열", 3),
+  g("권력과정의", "사회계열", 3),
+  g("현대인의영양과건강", "사회계열", 3),
+  g("데이터분석의이해", "사회계열", 3),
+  g("창업과진로탐색", "사회계열", 3),
+  g("산업·데이터공학의이해", "사회계열", 3),
+  g("창업과실용법률(LEGAL THINKING)", "사회계열", 3),
+  // 일반교양 — 자연계열
+  g("자연과환경", "자연계열", 3),
+  g("공간과심리", "자연계열", 3),
+  g("천문학의이해", "자연계열", 3),
+  g("빅데이터의이해", "자연계열", 3),
+  g("체험인공지능", "자연계열", 3),
+  g("엔지니어링기초", "자연계열", 3),
+  g("인터페이스디자인입문", "자연계열", 3),
+  g("미래사회와소재", "자연계열", 3),
+  g("슬기로운창업생활", "자연계열", 3),
+  g("스타트업과창업전략", "자연계열", 3),
+  g("전기전자공학개론", "자연계열", 3),
+  g("컴퓨팅사고(COMP. THINKING)", "자연계열", 3),
+  g("대학물리(1)", "자연계열", 3),
+  g("대학물리(2)", "자연계열", 3),
+  g("대학물리실험(2)", "자연계열", 1),
+  g("대학화학(1)", "자연계열", 3),
+  g("대학화학(2)", "자연계열", 3),
+  g("대학화학실험(2)", "자연계열", 1),
+  g("현대물리", "자연계열", 3),
+  g("광학", "자연계열", 3),
+  g("생물학(1)", "자연계열", 3),
+  g("생물학(2)", "자연계열", 3),
+  g("대학수학(1)", "자연계열", 3),
+  g("대학수학(2)", "자연계열", 3),
+  g("응용수학(1)", "자연계열", 3),
+  g("응용수학(2)", "자연계열", 3),
+  g("선형대수학", "자연계열", 3),
+  g("이산수학", "자연계열", 3),
+  g("통계학", "자연계열", 3),
+  g("공학컴퓨터입문및실습", "자연계열", 3),
+  g("공학CAD및GRAPHICS", "자연계열", 3),
+  g("객체지향프로그래밍", "자연계열", 3),
+  g("웹프로그래밍", "자연계열", 3),
+  g("수치해석", "자연계열", 3),
+  g("MATLAB프로그래밍및실습", "자연계열", 3),
+  g("R프로그래밍", "자연계열", 3),
+  g("C-프로그래밍", "자연계열", 3),
+  g("자율주행과공간심리", "자연계열", 3),
+  // 일반교양 — 예체능계열
+  g("여가생활과레크레이션", "예체능계열", 2),
+  g("현대음악의이해", "예체능계열", 3),
+  g("예술과종교", "예체능계열", 3),
+  g("고전음악의이해", "예체능계열", 3),
+  g("미술마케팅", "예체능계열", 3),
+  g("농구", "예체능계열", 2),
+  g("디자인과법", "예체능계열", 3),
+  g("예술과미디어", "예체능계열", 3),
+  g("프리핸드드로잉과스케칭(미술계)", "예체능계열", 3),
+  g("프리핸드드로잉과스케칭", "예체능계열", 3),
+  g("패션조형의이해", "예체능계열", 3),
+  g("영화의이해", "예체능계열", 3),
+  g("공연예술의이해", "예체능계열", 3),
+  g("유럽의미술과문화", "예체능계열", 3),
+  g("미학의이해", "예체능계열", 3),
+  g("사운드와컴퓨터음악", "예체능계열", 3),
+  g("예술과인간", "예체능계열", 3),
+  g("패션과테크놀로지", "예체능계열", 3),
+  g("미래세상의모빌리티", "예체능계열", 3),
+  g("디자인과뉴노멀", "예체능계열", 3),
+  g("현대건축:디자인전략과이론", "예체능계열", 3),
+  g("동아시아시각문화의이해", "예체능계열", 3),
+  g("유럽미국미술명작의이해", "예체능계열", 3),
+  g("디자인과문화", "예체능계열", 3),
+  g("XR과공간디자인", "예체능계열", 3),
+  g("몸의이해와영상미학", "예체능계열", 3),
+  g("여자농구", "예체능계열", 2),
+  g("AI디자인프로젝트", "예체능계열", 3),
+  g("퓨처모빌리티디자인의이해", "예체능계열", 3),
+  g("글로컬디자인창업(2)", "예체능계열", 2),
+  g("라이프스타일브랜드창업(2)", "예체능계열", 2),
+  g("창업기반DEX디자인(2)", "예체능계열", 3),
+  g("디자인창업실전", "예체능계열", 2),
+  g("실전상업사진창업(2)", "예체능계열", 3),
+  g("CLO 3D패션디자인및창직과정(2)", "예체능계열", 2),
+  g("글로벌패션전문가실무및창직과정(2)", "예체능계열", 2),
+  g("디자인씽킹(DESIGN THINKING)", "예체능계열", 3),
+  g("디자인과인간심리", "예체능계열", 3),
+  g("한국미술사", "예체능계열", 3),
+  g("안전및조직관리사례연구", "예체능계열", 2),
+  g("조직리더십사례연구", "예체능계열", 2),
+  // 일반교양 — 영어계열
+  g("영상영어", "영어계열", 2),
+  g("시사영어", "영어계열", 2),
+  g("실용영문법", "영어계열", 2),
+  g("영어회화", "영어계열", 2),
+  g("실용영어", "영어계열", 2),
+  g("고급실용영어", "영어계열", 2),
+  g("영어토론", "영어계열", 2),
+  // 일반교양 — 제2외국어계열
+  g("중국어중급회화(1)", "제2외국어계열", 2),
+  g("초급일본어(3)", "제2외국어계열", 2),
+  g("초급일본어강독", "제2외국어계열", 2),
+  g("중급중국어(2)", "제2외국어계열", 2),
+  g("중급일본어(1)", "제2외국어계열", 2),
+  g("중급일본어강독", "제2외국어계열", 2),
+  g("초급중국어(3)", "제2외국어계열", 2),
+  g("중급중국어(1)", "제2외국어계열", 2),
+  g("초급일본어회화연습", "제2외국어계열", 2),
+  g("중국어기초회화(1)", "제2외국어계열", 2),
+  g("중국어기초회화(2)", "제2외국어계열", 2),
+  g("중급일본어회화연습", "제2외국어계열", 2),
+  g("중국어로 배우는 한국문화와예술", "제2외국어계열", 2),
+  g("중급일본어한자", "제2외국어계열", 2),
+  g("고급일본어회화연습", "제2외국어계열", 2),
+  g("영상일본어", "제2외국어계열", 2),
+  g("초급이태리어", "제2외국어계열", 2),
+  g("일본어작문", "제2외국어계열", 2),
+  g("해외어학연수(2)", "제2외국어계열", 2),
 ];
 
 const saved = readSaved();
@@ -406,14 +613,22 @@ function syncFormToUI() {
   document.getElementById("fCredits").value = form.credits;
 }
 
-function catCount(cat) { return CATALOG.filter((c) => catOf(c.area) === cat).length; }
-function areaCount(area) { return CATALOG.filter((c) => c.area === area).length; }
-function currentArea() { return DRILL[pickCat] ? pickSub : pickCat; }
+function catCount(cat) { return CATALOG.filter((c) => c.cat === cat).length; }
+function subCount(cat, sub) { return CATALOG.filter((c) => c.cat === cat && c.sub === sub).length; }
+// 현재 선택 위치의 과목 목록 (좌 카테고리 + (드릴다운이면) 하위)
+function paneList() {
+  return CATALOG.filter((c) => c.cat === pickCat && (!isDrill(pickCat) || c.sub === pickSub));
+}
+// 담을 요건 영역 (일반교양은 자유선택으로 집계)
+function destArea() {
+  if (pickCat === "일반교양") return "자유선택";
+  return isDrill(pickCat) ? pickSub : pickCat;
+}
 
 function onCatClick(e) {
   const b = e.target.closest(".pk-cat"); if (!b) return;
   pickCat = b.dataset.cat;
-  pickSub = DRILL[pickCat] ? DRILL[pickCat][0] : null;
+  pickSub = isDrill(pickCat) ? DRILL_SUBS[pickCat][0] : null;
   form.name = "";
   refreshPicker(); updateSel();
 }
@@ -429,7 +644,7 @@ function onCourseClick(e) {
 }
 
 function refreshPicker() {
-  const drill = DRILL[pickCat];
+  const drill = isDrill(pickCat);
   document.getElementById("picker2").dataset.cols = drill ? "3" : "2";
   document.getElementById("pkSubs").hidden = !drill;
   renderCats(); renderSubs(); renderCourses();
@@ -441,16 +656,14 @@ function renderCats() {
     .join("");
 }
 function renderSubs() {
-  const subs = DRILL[pickCat];
+  const subs = DRILL_SUBS[pickCat];
   if (!subs) return;
   document.getElementById("pkSubs").innerHTML = subs
-    .map((a) => `<button class="pk-cat ${a === pickSub ? "active" : ""}" data-sub="${escapeAttr(a)}">${escapeHtml(a)}<span>${areaCount(a)}</span></button>`)
+    .map((a) => `<button class="pk-cat ${a === pickSub ? "active" : ""}" data-sub="${escapeAttr(a)}">${escapeHtml(a)}<span>${subCount(pickCat, a)}</span></button>`)
     .join("");
 }
 function renderCourses() {
-  const area = currentArea();
-  const list = area ? CATALOG.filter((c) => c.area === area) : [];
-  const rows = list
+  const rows = paneList()
     .map((c) => {
       const meta = [`${c.credits}학점`, c.semester || "학기무관"].join(" · ");
       return `<button class="pk-course ${form.name === c.name ? "active" : ""}" data-name="${escapeAttr(c.name)}">
@@ -467,17 +680,17 @@ function renderCourses() {
   const mi = document.getElementById("manualName");
   mi.addEventListener("input", (e) => {
     form.name = e.target.value;
-    form.area = currentArea();
+    form.area = destArea();
     [...document.querySelectorAll(".pk-course.active")].forEach((x) => x.classList.remove("active"));
     updateSel();
   });
 }
 function isManual() {
-  return form.name && !CATALOG.some((c) => c.name === form.name && c.area === currentArea());
+  return form.name && !paneList().some((c) => c.name === form.name);
 }
 
 function pickCourse(name) {
-  const hit = CATALOG.find((c) => c.name === name && c.area === currentArea()) || CATALOG.find((c) => c.name === name);
+  const hit = paneList().find((c) => c.name === name) || CATALOG.find((c) => c.name === name);
   form.name = name;
   if (hit) {
     form.area = hit.area;
